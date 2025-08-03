@@ -1,0 +1,1084 @@
+Sparsh
+sparsh_86239
+Online
+
+Sparsh — Yesterday at 20:41
+oh shit
+Killua — Yesterday at 20:41
+u still get -2 as marks
+Sparsh — Yesterday at 20:41
+thats horrible
+Killua — Yesterday at 20:41
+out of 3
+4
+solve tehh ceo one
+Sparsh — Yesterday at 20:41
+btw guess what
+Killua — Yesterday at 20:41
+wut
+Sparsh — Yesterday at 20:41
+i made a game
+Killua — Yesterday at 20:41
+ik
+space something
+in html
+Sparsh — Yesterday at 20:41
+how
+Killua — Yesterday at 20:41
+i played
+its on devpost
+Sparsh — Yesterday at 20:42
+that was the wrong code i upploaded btw
+check the video
+thats the proper one
+Killua — Yesterday at 20:42
+nope it works
+tried it
+Sparsh — Yesterday at 20:42
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neo Space Shooter - Asteroids Edition</title>
+  <style>
+    html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:Arial,Helvetica,sans-serif;color:#fff}
+    /* UI elements (score, health, ammo) – larger font for better visibility */
+    #ui{position:fixed;top:8px;left:8px;right:8px;display:flex;justify-content:space-between;pointer-events:none;font-size:24px;font-weight:bold;text-shadow:0 0 6px #000}
+    canvas{display:block;width:100%;height:100%}
+    #restartBtn{margin:auto;display:none;padding:12px 32px;font-size:20px;font-weight:bold;border:none;border-radius:6px;background:#ff0055;color:#fff;cursor:pointer;box-shadow:0 0 12px #ff005580}
+
+    /* Ammo bar styles */
+    #ammoBarContainer{position:fixed;bottom:8px;left:8px;width:220px;height:14px;background:#333;border-radius:7px;pointer-events:none;overflow:hidden;z-index:10}
+    #ammoBar{height:100%;background:#88ddee}
+
+    /* Intro overlay styling */
+    #introOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;z-index:100;pointer-events:auto}
+    #introContent{max-width:500px;padding:24px;background:rgba(0,0,0,0.6);border:1px solid #444;border-radius:8px;}
+    #introContent ul{list-style:disc;margin-left:20px;text-align:left;}
+    /* Increase title size in intro overlay */
+    #introContent h1{margin-top:0;font-size:40px;}
+  </style>
+</head>
+<body tabindex="0">
+  <div id="ui">
+    <span id="score">Score: 0</span>
+    <span id="health">Health: 3</span>
+    <!-- Display survival time -->
+    <span id="time">Time: 0s</span>
+    <!-- Ammo display will be appended in script -->
+  </div>
+  <button id="restartBtn">RESTART</button>
+  <canvas id="game"></canvas>
+  <!-- Meme overlay displayed when score is below threshold at game over -->
+  <div id="memeOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);color:#fff;z-index:200;justify-content:center;align-items:center;text-align:center;font-family:Arial,sans-serif">
+    <div id="memeContent" style="max-width:500px;padding:24px;background:rgba(0,0,0,0.6);border:1px solid #444;border-radius:8px">
+      <!-- An image can be displayed here for certain memes. It will be hidden when not used. -->
+      <img id="memeImg" style="max-width:100%;margin-bottom:16px;display:none;" />
+      <!-- The meme title and message are updated dynamically in the script -->
+      <h2 id="memeTitle" style="margin-top:0;font-size:32px"></h2>
+      <p id="memeMessage"></p>
+      <button id="memeBtn" style="margin-top:16px;padding:12px 24px;font-size:18px;font-weight:bold;border:none;border-radius:6px;background:#ff0055;color:#fff;cursor:pointer;box-shadow:0 0 10px #ff005580">Play Again</button>
+    </div>
+  </div>
+  <!-- Ammo bar container -->
+  <div id="ammoBarContainer">
+    <div id="ammoBar"></div>
+  </div>
+
+  <!-- Intro overlay for game instructions -->
+  <div id="introOverlay">
+    <div id="introContent">
+      <h1>Neo Space Shooter</h1>
+      <p><strong>Controls:</strong></p>
+      <ul>
+        <li>Move: Arrow keys</li>
+        <li>Shoot: Spacebar</li>
+      </ul>
+      <p>Your ship carries a limited number of laser shots.  Watch the ammo bar in the bottom left – when it is empty you cannot fire.</p>
+      <p>Avoid the drifting asteroids. Colliding with an asteroid will damage your ship.</p>
+      <p>Collect the glowing blue energy orbs to instantly refill your ammo without taking any damage.</p>
+      <p>Choose a difficulty below, then press <strong>Enter</strong> or click the button to begin.</p>
+      <!-- Difficulty selection buttons -->
+      <div id="difficultySelection" style="margin-top:16px; display:flex; gap:12px; justify-content:center;">
+        <button class="diffButton" data-diff="easy" style="padding:8px 16px;font-size:16px;font-weight:bold;border:none;border-radius:6px;background:#4caf50;color:#fff;cursor:pointer;">Easy</button>
+        <button class="diffButton" data-diff="medium" style="padding:8px 16px;font-size:16px;font-weight:bold;border:none;border-radius:6px;background:#ff9800;color:#fff;cursor:pointer;">Mild</button>
+        <button class="diffButton" data-diff="hard" style="padding:8px 16px;font-size:16px;font-weight:bold;border:none;border-radius:6px;background:#f44336;color:#fff;cursor:pointer;">Hard</button>
+      </div>
+      <p style="margin-top:12px; font-style:italic; font-size:14px;">(You can also press 1 for Easy, 2 for Mild, or 3 for Hard)</p>
+    </div>
+  </div>
+<script>
+/* ---------- Canvas setup ---------- */
+const c = document.getElementById('game');
+const ctx = c.getContext('2d');
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+function resizeCanvas(){c.width = innerWidth; c.height = innerHeight;}
+
+/* ---------- Utility helpers ---------- */
+const randBetween = (min,max)=>Math.random()*(max-min)+min;
+function angleTo(x1,y1,x2,y2){return Math.atan2(y2-y1,x2-x1);}  
+function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}  
+
+/* ---------- Assets ---------- */
+/*
+ * Asteroids are now procedurally generated rather than loaded from a pre-rendered
+ * sprite.  We still declare an Image object placeholder for future enhancements,
+ * but we do not assign any source to it here.  Each asteroid instance will
+ * generate its own irregular shape and crater pattern at spawn time.
+ */
+const asteroidImg = new Image();
+
+// Grab DOM elements for ammo bar, intro overlay and meme overlay
+const ammoBar = document.getElementById('ammoBar');
+const introOverlay = document.getElementById('introOverlay');
+const memeOverlay = document.getElementById('memeOverlay');
+const memeBtn = document.getElementById('memeBtn');
+... (721 lines left)
+Collapse
+neo_space_shooter_modified (25).html
+33 KB
+Killua — Yesterday at 20:42
+btw
+Sparsh — Yesterday at 20:42
+use this code
+Killua — Yesterday at 20:42
+this is average bhopali theck skills
+tech
+Sparsh — Yesterday at 20:42
+the github one is outdated
+Killua — Yesterday at 20:42
+not kidding
+Sparsh — Yesterday at 20:43
+lmfao
+Killua — Yesterday at 20:43
+its called hakla
+Sparsh — Yesterday at 20:43
+btw happy friendship day
+Killua — Yesterday at 20:43
+oh damn thanks
+meanwhile im in inregerated
+a special section fr toppers
+fr jee , neet and all
+Sparsh — Yesterday at 20:44
+nice
+Killua — Yesterday at 20:44
+and half class dont know english
+man
+Sparsh — Yesterday at 20:44
+im not doing that well in academics
+Killua — Yesterday at 20:44
+i said happy friendship day
+Sparsh — Yesterday at 20:44
+these days
+Killua — Yesterday at 20:44
+and they said
+same you
+SAME YOU
+Sparsh — Yesterday at 20:44
+how you said today
+Killua — Yesterday at 20:44
+yesterday
+saturdays working
+only fur 9a and 10 a (integrated
+Sparsh — Yesterday at 20:45
+oh sed lif u have
+Killua — Yesterday at 20:45
+liek at least know english
+if ur doin jee
+imagine in iit
+Sparsh — Yesterday at 20:45
+no shit im doing jee
+Killua — Yesterday at 20:45
+hello esteemed student
+welcome to iit dholakpur
+and they say
+Sparsh — Yesterday at 20:45
+bruh
+dholakpur
+Killua — Yesterday at 20:45
+yes yes happy iit
+yup
+Sparsh — Yesterday at 20:46
+isnt that the name of some chotha bheem shit
+Killua — Yesterday at 20:46
+bheem ki shakti doom macahae
+samne koi tik na pae
+Sparsh — Yesterday at 20:46
+chota bheem chota bheem
+chota bheem bhemm bheem
+Killua — Yesterday at 20:47
+notice how half of em are naked
+Sparsh — Yesterday at 20:47
+Killua — Yesterday at 20:47
+nekkked
+Sparsh — Yesterday at 20:47
+ofc
+Killua — Yesterday at 20:47
+couldnt animate clothes
+Sparsh — Yesterday at 20:47
+this is legit chota bheem clip
+Killua — Yesterday at 20:48
+ik
+mighty lil bheem
+Sparsh — Yesterday at 20:48
+btw before im going
+Killua — Yesterday at 20:48
+Sparsh — Yesterday at 20:48
+play grand prix
+Killua — Yesterday at 20:48
+wut
+Sparsh — Yesterday at 20:48
+on crazygames
+Killua — Yesterday at 20:48
+what grand prix
+Sparsh — Yesterday at 20:48
+its a game
+its really fun
+https://www.crazygames.com/game/crazy-grand-prix
+Crazy Grand Prix 🕹️ Play on CrazyGames
+Crazy Grand Prix is a Formula 1 racing game where you play as a professional racer. You can play the career mode, practice mode, and even play with other people in multiplayer mode. Recruit a teammate, be the champion in the race, get the money prize, and use it to upgrade your racing car!
+Crazy Grand Prix 🕹️ Play on CrazyGames
+Killua — Yesterday at 20:49
+no time contact after 6
+tmrw
+sst exam
+day after
+chess inter school
+day after that
+Sparsh — Yesterday at 20:49
+Killua — Yesterday at 20:49
+extra quadrata
+bye
+Sparsh — Yesterday at 20:49
+k
+bye
+﻿
+Killua
+killua_lightning9800
+ 
+ブルーロック
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neo Space Shooter - Asteroids Edition</title>
+  <style>
+    html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:Arial,Helvetica,sans-serif;color:#fff}
+    /* UI elements (score, health, ammo) – larger font for better visibility */
+    #ui{position:fixed;top:8px;left:8px;right:8px;display:flex;justify-content:space-between;pointer-events:none;font-size:24px;font-weight:bold;text-shadow:0 0 6px #000}
+    canvas{display:block;width:100%;height:100%}
+    #restartBtn{margin:auto;display:none;padding:12px 32px;font-size:20px;font-weight:bold;border:none;border-radius:6px;background:#ff0055;color:#fff;cursor:pointer;box-shadow:0 0 12px #ff005580}
+
+    /* Ammo bar styles */
+    #ammoBarContainer{position:fixed;bottom:8px;left:8px;width:220px;height:14px;background:#333;border-radius:7px;pointer-events:none;overflow:hidden;z-index:10}
+    #ammoBar{height:100%;background:#88ddee}
+
+    /* Intro overlay styling */
+    #introOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;z-index:100;pointer-events:auto}
+    #introContent{max-width:500px;padding:24px;background:rgba(0,0,0,0.6);border:1px solid #444;border-radius:8px;}
+    #introContent ul{list-style:disc;margin-left:20px;text-align:left;}
+    /* Increase title size in intro overlay */
+    #introContent h1{margin-top:0;font-size:40px;}
+  </style>
+</head>
+<body tabindex="0">
+  <div id="ui">
+    <span id="score">Score: 0</span>
+    <span id="health">Health: 3</span>
+    <!-- Display survival time -->
+    <span id="time">Time: 0s</span>
+    <!-- Ammo display will be appended in script -->
+  </div>
+  <button id="restartBtn">RESTART</button>
+  <canvas id="game"></canvas>
+  <!-- Meme overlay displayed when score is below threshold at game over -->
+  <div id="memeOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);color:#fff;z-index:200;justify-content:center;align-items:center;text-align:center;font-family:Arial,sans-serif">
+    <div id="memeContent" style="max-width:500px;padding:24px;background:rgba(0,0,0,0.6);border:1px solid #444;border-radius:8px">
+      <!-- An image can be displayed here for certain memes. It will be hidden when not used. -->
+      <img id="memeImg" style="max-width:100%;margin-bottom:16px;display:none;" />
+      <!-- The meme title and message are updated dynamically in the script -->
+      <h2 id="memeTitle" style="margin-top:0;font-size:32px"></h2>
+      <p id="memeMessage"></p>
+      <button id="memeBtn" style="margin-top:16px;padding:12px 24px;font-size:18px;font-weight:bold;border:none;border-radius:6px;background:#ff0055;color:#fff;cursor:pointer;box-shadow:0 0 10px #ff005580">Play Again</button>
+    </div>
+  </div>
+  <!-- Ammo bar container -->
+  <div id="ammoBarContainer">
+    <div id="ammoBar"></div>
+  </div>
+
+  <!-- Intro overlay for game instructions -->
+  <div id="introOverlay">
+    <div id="introContent">
+      <h1>Neo Space Shooter</h1>
+      <p><strong>Controls:</strong></p>
+      <ul>
+        <li>Move: Arrow keys</li>
+        <li>Shoot: Spacebar</li>
+      </ul>
+      <p>Your ship carries a limited number of laser shots.  Watch the ammo bar in the bottom left – when it is empty you cannot fire.</p>
+      <p>Avoid the drifting asteroids. Colliding with an asteroid will damage your ship.</p>
+      <p>Collect the glowing blue energy orbs to instantly refill your ammo without taking any damage.</p>
+      <p>Choose a difficulty below, then press <strong>Enter</strong> or click the button to begin.</p>
+      <!-- Difficulty selection buttons -->
+      <div id="difficultySelection" style="margin-top:16px; display:flex; gap:12px; justify-content:center;">
+        <button class="diffButton" data-diff="easy" style="padding:8px 16px;font-size:16px;font-weight:bold;border:none;border-radius:6px;background:#4caf50;color:#fff;cursor:pointer;">Easy</button>
+        <button class="diffButton" data-diff="medium" style="padding:8px 16px;font-size:16px;font-weight:bold;border:none;border-radius:6px;background:#ff9800;color:#fff;cursor:pointer;">Mild</button>
+        <button class="diffButton" data-diff="hard" style="padding:8px 16px;font-size:16px;font-weight:bold;border:none;border-radius:6px;background:#f44336;color:#fff;cursor:pointer;">Hard</button>
+      </div>
+      <p style="margin-top:12px; font-style:italic; font-size:14px;">(You can also press 1 for Easy, 2 for Mild, or 3 for Hard)</p>
+    </div>
+  </div>
+<script>
+/* ---------- Canvas setup ---------- */
+const c = document.getElementById('game');
+const ctx = c.getContext('2d');
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+function resizeCanvas(){c.width = innerWidth; c.height = innerHeight;}
+
+/* ---------- Utility helpers ---------- */
+const randBetween = (min,max)=>Math.random()*(max-min)+min;
+function angleTo(x1,y1,x2,y2){return Math.atan2(y2-y1,x2-x1);}  
+function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}  
+
+/* ---------- Assets ---------- */
+/*
+ * Asteroids are now procedurally generated rather than loaded from a pre-rendered
+ * sprite.  We still declare an Image object placeholder for future enhancements,
+ * but we do not assign any source to it here.  Each asteroid instance will
+ * generate its own irregular shape and crater pattern at spawn time.
+ */
+const asteroidImg = new Image();
+
+// Grab DOM elements for ammo bar, intro overlay and meme overlay
+const ammoBar = document.getElementById('ammoBar');
+const introOverlay = document.getElementById('introOverlay');
+const memeOverlay = document.getElementById('memeOverlay');
+const memeBtn = document.getElementById('memeBtn');
+
+// Retrieve meme title, message and image elements for dynamic updates.  The
+// memeImg element will display the picture associated with each meme.
+const memeTitle = document.getElementById('memeTitle');
+const memeMessage = document.getElementById('memeMessage');
+const memeImg = document.getElementById('memeImg');
+
+// Attach click handlers to difficulty buttons.  When a difficulty is
+// selected, set the global difficulty variable and start the game.
+const diffButtons = document.querySelectorAll('.diffButton');
+diffButtons.forEach(btn => {
+  btn.addEventListener('click', e => {
+    // Prevent the intro overlay's click handler from firing
+    e.stopPropagation();
+    const diff = e.currentTarget.getAttribute('data-diff');
+    if(diff) difficulty = diff;
+    hideIntro();
+  });
+});
+
+// Allow numeric key shortcuts to select difficulty on the intro screen.
+window.addEventListener('keydown', e => {
+  if(showingIntro){
+    if(e.key === '1') { difficulty = 'easy'; hideIntro(); }
+    if(e.key === '2') { difficulty = 'medium'; hideIntro(); }
+    if(e.key === '3') { difficulty = 'hard'; hideIntro(); }
+  }
+});
+
+/*
+ * Meme configuration
+ *
+ * When the game ends with certain score thresholds, a fun meme is shown
+ * instead of the standard restart button. Each threshold has an
+ * associated image (stored in the same folder as this HTML) and a
+ * title/message pair. The images are small JPEG files for quick
+ * loading and avoid any copyright or likeness issues by using
+ * cartoon‑style signs rather than real people. The keys of this
+ * object correspond to score ranges used in endGame(). For example,
+ * the “low” meme is shown for scores below 1000, the “mid” meme for
+ * scores between 1000 and 1999, and the “high” meme for scores of
+ * 10000 or above. Feel free to swap out the images for your own
+ * custom memes – just place the files in the same directory and
+ * update the src values accordingly.
+ */
+/*const memeData = {
+  low: {
+    // Embed the image as a data URI so the meme displays correctly even
+    // when loading this file locally.  The string below is a base64
+    // encoded JPEG of a cartoon sign that reads "Professional Idiot".
+    src: ""
+    title: "Under 1000? Professional Idiot!",
+    message: "Yikes! Your score is under 1000. Time to sharpen those piloting skills."
+  },
+  mid: {
+    // Base64-encoded JPEG of a cartoon sign that reads "Not Good Enough"
+    src: ""
+    title: "Not Good Enough!",
+    message: "You scored between 1000 and 2000 points. Not bad, but you can do better."
+  },
+  high: {
+    // Base64-encoded JPEG of a cartoon sign reminding you to touch grass
+    src: ""
+    title: "Touch Some Grass!",
+    message: "Whoa, over 10,000 points! Perhaps it's time to step outside and see some nature."
+  }
+};*/
+
+// Define a simplified memeData object that uses external image files
+// instead of embedding extremely long base64 strings. These image files
+// should be present in the same directory as this HTML file.
+const memeData = {
+  low: {
+    // We leave the src blank here; it will be populated with a data URI below.
+    src: "",
+    title: "Under 1000? Professional Idiot!",
+    message: "Yikes! Your score is under 1000. You are a professional idiot! Time to sharpen those piloting skills."
+  },
+  mid: {
+    src: "",
+    title: "Not Good Enough!",
+    message: "You scored between 1000 and 2000 points. Not bad, but you can do better."
+  },
+  high: {
+    src: "",
+    title: "Touch Some Grass!",
+    message: "Whoa, over 10,000 points! Perhaps it's time to step outside and see some nature."
+  }
+};
+
+// -----------------------------------------------------------------------------
+// Override the low-score meme configuration with an external image and updated
+// text. The default base64 string embedded in memeData.low is extremely
+// long and can cause problems loading in some browsers. Instead, use a
+// lightweight local JPEG (professional_q60_200.jpg) and update the title
+// and message to clearly call the player a "professional idiot" when they
+// score under 1000. This override happens after memeData is defined so
+// existing properties are replaced.
+// The memeData object is now defined above with external images, so these overrides are not needed.
+
+
+/* ---------- Stars ---------- */
+const stars=[];
+function initStars(){
+  stars.length = 0;
+  // Increase star density for a richer star field
+  const count = Math.floor((c.width + c.height) / 2);
+  for(let i=0;i<count;i++){
+    stars.push({x:Math.random()*c.width,
+                y:Math.random()*c.height,
+                r:Math.random()<0.8?1:2,
+                s:Math.random()*0.4+0.2});
+  }
+}
+function updateStars(dt){
+  for(const s of stars){
+    s.y += s.s*dt*40;
+    if(s.y>c.height){s.y=0; s.x=Math.random()*c.width;}
+  }
+}
+function drawStars(){
+  ctx.fillStyle='#88aaff';
+  for(const s of stars){
+    ctx.globalAlpha = s.r===2?0.9:0.5;
+    ctx.fillRect(s.x,s.y,s.r,s.r);
+  }
+  ctx.globalAlpha = 1;
+}
+
+/* ---------- Player ---------- */
+const player={
+  x: c.width/2, y: c.height*0.8,
+  vx:0, vy:0, angle:0,
+  accel:900, maxSpeed:350,
+  cooldown:0
+};
+function resetPlayer(){
+  Object.assign(player,{x:c.width/2,y:c.height*0.8,vx:0,vy:0,angle:0,cooldown:0});
+}
+function updatePlayer(dt){
+  // apply friction
+  player.vx*=0.94; player.vy*=0.94;
+
+  // move & clamp speed
+  player.x += player.vx*dt; player.y += player.vy*dt;
+  const speed = Math.hypot(player.vx,player.vy);
+  if(speed>player.maxSpeed){
+    const f = player.maxSpeed/speed; player.vx*=f; player.vy*=f;
+  }
+  // wrap edges
+  if(player.x<0)player.x=c.width; if(player.x>c.width)player.x=0;
+  if(player.y<0)player.y=c.height; if(player.y>c.height)player.y=0;
+
+  // facing angle
+  player.angle = Math.atan2(player.vy,player.vx) || -Math.PI/2;
+
+  // cooldown
+  if(player.cooldown>0) player.cooldown-=dt;
+}
+function drawPlayer(){
+  ctx.save();
+  ctx.translate(player.x, player.y);
+  // Face the direction of movement.  We rotate the rocket so that "up" on the
+  // canvas corresponds to the player's velocity direction.  Adding
+  // Math.PI/2 aligns the rocket's nose with the y-axis.
+  ctx.rotate(player.angle + Math.PI/2);
+  // --- Exhaust flame ---
+  // Draw a larger, flickering flame to give the rocket a more dramatic
+  // appearance.  The flame length randomly varies each frame.
+  ctx.fillStyle = 'orange';
+  ctx.beginPath();
+  ctx.moveTo(-6, 22);
+  ctx.lineTo(0, 28 + randBetween(8, 12));
+  ctx.lineTo(6, 22);
+  ctx.closePath();
+  ctx.fill();
+  // --- Rocket body ---
+  // Define overall dimensions.  A taller body gives a more realistic
+  // proportion.  Width is narrow at the nose and tail and wider at the
+  // midsection.
+  const bodyHeight = 50;
+  const bodyWidth  = 20;
+  // Create a vertical gradient to simulate cylindrical shading: lighter on
+  // top and gradually darker toward the bottom.
+  const bodyGrad = ctx.createLinearGradient(0, -bodyHeight/2, 0, bodyHeight/2);
+  bodyGrad.addColorStop(0, '#f5f8ff');    // top highlight
+  bodyGrad.addColorStop(0.4, '#a8bbd9');  // mid tone
+  bodyGrad.addColorStop(1, '#425d92');    // bottom shadow
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  // Construct the hull with a tapered nose, rounded shoulders and a slightly
+  // flared tail.  These points create a smooth, rocket-like profile.
+  ctx.moveTo(0, -bodyHeight/2);
+  ctx.lineTo(bodyWidth * 0.4, -bodyHeight * 0.2);
+  ctx.lineTo(bodyWidth * 0.5, bodyHeight * 0.3);
+  ctx.lineTo(bodyWidth * 0.3, bodyHeight * 0.5);
+  ctx.lineTo(-bodyWidth * 0.3, bodyHeight * 0.5);
+  ctx.lineTo(-bodyWidth * 0.5, bodyHeight * 0.3);
+  ctx.lineTo(-bodyWidth * 0.4, -bodyHeight * 0.2);
+  ctx.closePath();
+  ctx.fill();
+  // Outline the hull to give definition
+  ctx.strokeStyle = '#243f70';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  // --- Hull details ---
+  // Draw two small circular windows along the body.  A radial gradient
+  // gives them a glass-like appearance.
+  const winGrad1 = ctx.createRadialGradient(0, -bodyHeight * 0.1, 0, 0, -bodyHeight * 0.1, 4);
+  winGrad1.addColorStop(0, 'rgba(80,110,180,0.9)');
+  winGrad1.addColorStop(1, 'rgba(20,40,80,0.4)');
+  ctx.fillStyle = winGrad1;
+  ctx.beginPath();
+  ctx.arc(0, -bodyHeight * 0.1, 4, 0, Math.PI * 2);
+  ctx.fill();
+  const winGrad2 = ctx.createRadialGradient(0, bodyHeight * 0.1, 0, 0, bodyHeight * 0.1, 4);
+  winGrad2.addColorStop(0, 'rgba(80,110,180,0.9)');
+  winGrad2.addColorStop(1, 'rgba(20,40,80,0.4)');
+  ctx.fillStyle = winGrad2;
+  ctx.beginPath();
+  ctx.arc(0, bodyHeight * 0.1, 4, 0, Math.PI * 2);
+  ctx.fill();
+  // Add subtle vertical stripes down the hull for additional texture
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.fillRect(-2, -bodyHeight * 0.2, 1, bodyHeight * 0.7);
+  ctx.fillRect(1, -bodyHeight * 0.2, 1, bodyHeight * 0.7);
+  // --- Fins ---
+  // Draw left and right fins.  These triangular wings extend from the
+  // midsection to the tail and are shaded slightly darker than the hull.
+  ctx.fillStyle = '#748ec3';
+  // Left fin
+  ctx.beginPath();
+  ctx.moveTo(-bodyWidth * 0.6, bodyHeight * 0.05);
+  ctx.lineTo(-bodyWidth, bodyHeight * 0.35);
+  ctx.lineTo(-bodyWidth * 0.2, bodyHeight * 0.35);
+  ctx.closePath();
+  ctx.fill();
+  // Right fin
+  ctx.beginPath();
+  ctx.moveTo(bodyWidth * 0.6, bodyHeight * 0.05);
+  ctx.lineTo(bodyWidth, bodyHeight * 0.35);
+  ctx.lineTo(bodyWidth * 0.2, bodyHeight * 0.35);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+/* ---------- Ammo & Lasers ---------- */
+const lasers=[];
+// maximum shots available before reload – increased to 30 for a longer burst before refills
+const maxAmmo = 30;
+let ammo = maxAmmo;
+
+// Create UI element for ammo and append to UI container
+const ui = document.getElementById('ui');
+const ammoEl = document.createElement('span');
+ammoEl.id = 'ammo';
+ui.appendChild(ammoEl);
+
+function shoot(){
+  // only fire if cooldown elapsed and ammo available
+  if(player.cooldown<=0 && ammo>0){
+    lasers.push({x:player.x, y:player.y-14, vy:-650});
+    player.cooldown=0.18;
+    ammo--;
+  }
+}
+function reloadAmmo(){
+  ammo = maxAmmo;
+}
+function updateLasers(dt){
+  for(let i=lasers.length-1;i>=0;i--){
+    const l = lasers[i]; l.y += l.vy*dt;
+    if(l.y<-20) lasers.splice(i,1);
+  }
+}
+function drawLasers(){
+  ctx.fillStyle='#8ff';
+  for(const l of lasers){
+    ctx.fillRect(l.x-2,l.y-12,4,14);
+  }
+}
+
+/* ---------- Asteroids (Enemies) ---------- */
+const enemies=[];
+let enemyTimer=0;
+
+/**
+ * Generate a new asteroid with random size, velocity and shape.
+ */
+function spawnEnemy(){
+  /*
+   * Randomly spawn either an energy orb or an asteroid. Energy orbs are
+   * beneficial pickups that instantly reload the player's ammo when
+   * collected. They are less common than asteroids.
+   */
+  // Increase the likelihood of spawning an energy orb to make ammo refills more abundant (around 20% chance)
+  if(Math.random() < 0.2){
+    const orbSize = 14;
+    const x = randBetween(orbSize, c.width - orbSize);
+    const y = -orbSize;
+    const vx = randBetween(-40, 40);
+    const vy = randBetween(60, 120);
+    enemies.push({type:'energy', x, y, vx, vy, size: orbSize});
+    return;
+  }
+  // otherwise spawn a procedurally generated asteroid.  The asteroid's appearance is
+  // defined by a random polygon and a set of crater positions.  Each vertex of the
+  // polygon is a point on the unit circle scaled by a random factor to create a
+  // jagged silhouette.  Craters are small dark circles randomly placed on the
+  // asteroid surface.
+  // Vary asteroid size more widely.  Asteroids can be anywhere from small
+  // space rocks to large boulders.  Using a larger range gives the
+  // battlefield more visual variety and more challenge.
+  const size = randBetween(25, 100);
+  const x = randBetween(size, c.width - size);
+  const y = -size;
+  const vx = randBetween(-60, 60);
+  const vy = randBetween(40, 100);
+  // Each asteroid can be destroyed with two hits.  Originally hp scaled with
+  // size (Math.ceil(size/15)), but this made large asteroids very tough.  To
+  // simplify gameplay as requested, we set hp to 2 for all asteroids.
+  const hp = 2;
+  const angle = Math.random() * Math.PI * 2;
+  const spin  = (Math.random() * 2 - 1) * 0.4; // random rotation speed
+  // Generate a rounded shape: choose between 8 and 14 vertices.  Each vertex is
+  // positioned evenly around the circle with only mild random variation in
+  // angle and radius to create a mostly circular silhouette with gentle
+  // bumps.  This produces asteroids that look more like real rounded rocks.
+  const vertexCount = Math.floor(randBetween(8, 14));
+  const shape = [];
+  for(let i=0; i<vertexCount; i++){
+    const baseAng = (Math.PI * 2 * i) / vertexCount;
+    // Limit angular jitter to keep the shape mostly round
+    const jitter = (Math.random() - 0.5) * ((Math.PI * 2) / vertexCount) * 0.2;
+    const ang = baseAng + jitter;
+    // Use a narrower radius range for smoother contours
+    const radiusMod = randBetween(0.8, 1.2);
+    shape.push({x: Math.cos(ang) * radiusMod, y: Math.sin(ang) * radiusMod});
+  }
+  // Generate craters: each crater has a normalized position and radius
+  const craterCount = Math.floor(randBetween(5, 10));
+  const craters = [];
+  for(let i=0; i<craterCount; i++){
+    const ang2 = Math.random() * Math.PI * 2;
+    const dist = Math.random() * 0.5; // limit crater to central area
+    const r = randBetween(0.05, 0.12);
+    craters.push({x: Math.cos(ang2) * dist, y: Math.sin(ang2) * dist, r});
+  }
+  // generate speckles to add surface texture
+  const speckleCount = Math.floor(randBetween(15, 30));
+  const speckles = [];
+  for(let i=0; i<speckleCount; i++){
+    const ang3 = Math.random() * Math.PI * 2;
+    const dist3 = Math.random() * 0.6;
+    const r3   = randBetween(0.02, 0.05);
+    speckles.push({x: Math.cos(ang3) * dist3, y: Math.sin(ang3) * dist3, r: r3});
+  }
+  enemies.push({type:'asteroid', x,y,vx,vy,size,hp,angle,spin,shape,craters,speckles});
+}
+
+/**
+ * Update all asteroids: movement, collisions and off-screen removal.
+ */
+function updateEnemies(dt){
+  enemyTimer -= dt;
+  // spawn asteroids more frequently for a more intense field
+  if(enemyTimer <= 0){
+    // Spawn a moderate number of objects to prevent overcrowding.  Each spawn
+    // produces between one and two new asteroids or energy orbs.  This keeps
+    // the field lively without clumping too many together.
+    // Determine spawn parameters based on the selected difficulty.  Each
+    // difficulty defines a minimum and maximum number of asteroids/orbs
+    // per spawn and a range for the delay between spawns.  See
+    // difficultySettings in the global section for values.
+    const settings = difficultySettings[difficulty] || difficultySettings.medium;
+    const minSpawn = settings.spawnMin;
+    const maxSpawn = settings.spawnMax;
+    const spawnCount = minSpawn + Math.floor(Math.random() * (maxSpawn - minSpawn + 1));
+    for(let i=0; i < spawnCount; i++) spawnEnemy();
+    enemyTimer = randBetween(settings.timerMin, settings.timerMax);
+  }
+  for(let i=enemies.length-1;i>=0;i--){
+    const e = enemies[i];
+    // move
+    e.x += e.vx * dt;
+    e.y += e.vy * dt;
+      // update rotation for asteroids
+      if(e.type === 'asteroid'){
+        e.angle += e.spin * dt;
+      }
+    // wrap horizontally to keep asteroids within screen for extended challenge
+    if(e.x < -e.size) e.x = c.width + e.size;
+    if(e.x > c.width + e.size) e.x = -e.size;
+    // collision with player
+    const collisionDist = e.size + 14; // approximate player radius
+    if(distance(e,player) < collisionDist){
+      if(e.type === 'energy'){
+        // energy orb restores ammo but does not damage the player
+        reloadAmmo();
+        // small visual effect at the pickup location
+        explosions.push(makeExplosion(e.x,e.y));
+        enemies.splice(i,1);
+        continue;
+      } else if(e.type === 'asteroid'){
+        // hitting an asteroid damages the player.  It no longer reloads ammo.
+        explosions.push(makeExplosion(player.x,player.y));
+        health--;
+        // Do not reload ammo on collision with asteroid
+        enemies.splice(i,1);
+        if(health <= 0) endGame();
+        continue;
+      }
+    }
+    // laser hits (only apply to asteroids; energy orbs cannot be destroyed by lasers)
+    if(e.type === 'asteroid'){
+      for(let j=lasers.length-1;j>=0;j--){
+        // simple box collision around asteroid
+        if(Math.abs(lasers[j].x - e.x) < (e.size + 4) && Math.abs(lasers[j].y - e.y) < (e.size + 4)){
+          lasers.splice(j,1);
+          e.hp--;
+          explosions.push(makeExplosion(e.x,e.y));
+          if(e.hp <= 0){
+            score += 100;
+            enemies.splice(i,1);
+          }
+          break;
+        }
+      }
+    }
+    // off screen vertically
+    if(e.y > c.height + e.size){
+      enemies.splice(i,1);
+    }
+  }
+}
+
+/**
+ * Draw all asteroids using their irregular precomputed shapes.
+ */
+function drawEnemies(){
+  // Draw all enemies. Asteroids are drawn with gradients and craters, while
+  // energy orbs are drawn as glowing spheres.
+  for(const e of enemies){
+    if(e.type === 'asteroid'){
+      // Draw a procedurally generated asteroid.  Each asteroid stores a list of
+      // normalized vertices (e.shape) and crater definitions (e.craters).  We
+      // fill the body with a radial gradient from a lighter centre to a darker
+      // edge, then overlay craters as darker circles.
+      ctx.save();
+      ctx.translate(e.x, e.y);
+      ctx.rotate(e.angle);
+      // body gradient shading
+      const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, e.size);
+      grad.addColorStop(0, '#b89d6a');
+      grad.addColorStop(1, '#513f2a');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      const pts = e.shape;
+      // start at first vertex
+      ctx.moveTo(pts[0].x * e.size, pts[0].y * e.size);
+      for(let i=1; i<pts.length; i++){
+        ctx.lineTo(pts[i].x * e.size, pts[i].y * e.size);
+      }
+      ctx.closePath();
+      ctx.fill();
+      // draw craters
+      ctx.fillStyle = 'rgba(40, 30, 20, 0.6)';
+      for(const cr of e.craters){
+        ctx.beginPath();
+        ctx.arc(cr.x * e.size, cr.y * e.size, cr.r * e.size, 0, Math.PI*2);
+        ctx.fill();
+      }
+      // draw speckles (small random pits and bumps for texture)
+      ctx.fillStyle = 'rgba(40, 30, 20, 0.4)';
+      for(const sp of e.speckles){
+        ctx.beginPath();
+        ctx.arc(sp.x * e.size, sp.y * e.size, sp.r * e.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      // Add a soft highlight on the upper-left side to give the illusion of
+      // light shining from that direction.  A radial gradient with a light
+      // centre and transparent edge produces a gentle highlight.
+      {
+        const highlightRad = ctx.createRadialGradient(-e.size * 0.3, -e.size * 0.3, 0, -e.size * 0.3, -e.size * 0.3, e.size * 0.7);
+        highlightRad.addColorStop(0, 'rgba(255, 240, 200, 0.5)');
+        highlightRad.addColorStop(1, 'rgba(255, 240, 200, 0)');
+        ctx.fillStyle = highlightRad;
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x * e.size, pts[0].y * e.size);
+        for(let i=1; i<pts.length; i++){
+          ctx.lineTo(pts[i].x * e.size, pts[i].y * e.size);
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+      // Outline to separate the asteroid from the background
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+    } else if(e.type === 'energy'){
+      // draw energy orbs as glowing spheres
+      ctx.save();
+      ctx.translate(e.x, e.y);
+      const orbSize = e.size;
+      const grad = ctx.createRadialGradient(0,0, orbSize*0.2, 0,0, orbSize);
+      grad.addColorStop(0, '#88e9ff');
+      grad.addColorStop(0.5, '#4466dd');
+      grad.addColorStop(1, '#001a4a');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(0,0, orbSize, 0, Math.PI*2);
+      ctx.fill();
+      // subtle outer glow ring
+      ctx.strokeStyle = 'rgba(136,233,255,0.5)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0,0, orbSize*1.2, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+}
+
+/* ---------- Explosions ---------- */
+const explosions=[];
+function makeExplosion(x,y){
+  const p=[]; const count=18;
+  for(let i=0;i<count;i++){
+    const a=Math.random()*Math.PI*2;
+    p.push({x,y, vx:Math.cos(a)*randBetween(40,140),
+                   vy:Math.sin(a)*randBetween(40,140),
+                   life:randBetween(0.7,1.1)});
+  }
+  return {p};
+}
+function updateExplosions(dt){
+  for(let i=explosions.length-1;i>=0;i--){
+    const ex=explosions[i];
+    for(const prt of ex.p){
+      prt.x+=prt.vx*dt; prt.y+=prt.vy*dt; prt.vy+=120*dt;
+      prt.life-=dt;
+    }
+    ex.p=ex.p.filter(p=>p.life>0);
+    if(!ex.p.length) explosions.splice(i,1);
+  }
+}
+function drawExplosions(){
+  ctx.fillStyle='#ff7744';
+  for(const ex of explosions){
+    for(const p of ex.p){
+      ctx.globalAlpha=Math.max(p.life,0);
+      ctx.fillRect(p.x,p.y,3,3);
+    }
+  }
+  ctx.globalAlpha=1;
+}
+
+/* ---------- Inputs ---------- */
+const keys={};
+// Only block keys we actually use: space and arrow keys.  We no longer
+// support WASD, K or Enter controls.
+const blockKeys=[' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'];
+window.addEventListener('keydown',e=>{
+  if(blockKeys.includes(e.key)) e.preventDefault();
+  keys[e.key.toLowerCase()]=true;
+});
+window.addEventListener('keyup',e=>{
+  if(blockKeys.includes(e.key)) e.preventDefault();
+  keys[e.key.toLowerCase()]=false;
+});
+
+/* ---------- Game state ---------- */
+let score=0, health=3;
+// The game is not running until the player starts. A separate flag tracks
+// whether the intro overlay is visible.
+let running=false;
+let showingIntro=true;
+
+// Track how long the player survives in seconds and control automatic
+// point awarding.  survivalTime accumulates elapsed time in seconds, while
+// pointTimer counts up to one second and then increments the score by 10.
+let survivalTime = 0;
+let pointTimer   = 0;
+
+// Difficulty configuration.  Each level defines how many asteroids/orbs
+// spawn per interval and the time between spawns.  Players can select
+// between Easy, Medium (Mild) and Hard modes from the intro overlay.
+const difficultySettings = {
+  easy:   {spawnMin: 1, spawnMax: 2, timerMin: 1.0, timerMax: 1.6},
+  medium: {spawnMin: 2, spawnMax: 3, timerMin: 0.5, timerMax: 1.0},
+  hard:   {spawnMin: 3, spawnMax: 5, timerMin: 0.3, timerMax: 0.6}
+};
+// Default difficulty is medium (mild).
+let difficulty = 'medium';
+const scoreEl=document.getElementById('score');
+const healthEl=document.getElementById('health');
+const timeEl=document.getElementById('time');
+const restartBtn=document.getElementById('restartBtn');
+restartBtn.onclick=startGame;
+document.body.focus();
+
+/* ---------- Main loop ---------- */
+let last=performance.now();
+initStars();
+// Show the intro overlay on initial load
+introOverlay.style.display = 'flex';
+// Set up intro handlers
+function hideIntro(){
+  if(!showingIntro) return;
+  showingIntro = false;
+  introOverlay.style.display = 'none';
+  startGame();
+}
+
+// Handler for meme overlay: clicking the play-again button starts a new game
+if(memeBtn){
+  memeBtn.addEventListener('click', () => {
+    hideMemeAndRestart();
+  });
+}
+
+function hideMemeAndRestart(){
+  // Hide meme overlay and start a new game
+  if(memeOverlay) memeOverlay.style.display = 'none';
+  startGame();
+}
+introOverlay.addEventListener('click', hideIntro);
+// Allow pressing Enter or Space to start the game
+window.addEventListener('keydown', e => {
+  if(showingIntro && (e.key === 'Enter' || e.key === ' ')){
+    hideIntro();
+  }
+});
+function startGame(){
+  score=0; health=3; ammo=maxAmmo;
+  // Reset survival timer and point accumulator when starting a new game
+  survivalTime = 0;
+  pointTimer   = 0;
+  enemies.length=lasers.length=explosions.length=0;
+  running=true;
+  restartBtn.style.display='none';
+  // Hide meme overlay if it was displayed from a previous game
+  if(memeOverlay) memeOverlay.style.display='none';
+  resetPlayer();
+  last = performance.now();
+  animate();
+}
+function endGame(){
+  // End the game and display a simple "Game Over" overlay.  Regardless of
+  // score, the player is told to go outside and "touch grass".  We hide
+  // the restart button and show the meme overlay with a custom title and
+  // message.
+  running = false;
+  if (memeTitle) memeTitle.textContent = 'Game Over';
+  if (memeMessage) memeMessage.textContent = 'Please go and touch grass now.';
+  if (memeImg) memeImg.style.display = 'none';
+  if (memeOverlay) memeOverlay.style.display = 'flex';
+  restartBtn.style.display = 'none';
+}
+
+function animate(now=performance.now()){
+  if(!running)return;
+  const dt=(now-last)/1000; last=now;
+  // Update survival time and award points every second.  The survivalTime
+  // accumulates total time the player has stayed alive.  pointTimer
+  // accumulates delta time until it reaches one second, at which point
+  // 10 points are added to the score and the timer resets.
+  if(running){
+    survivalTime += dt;
+    pointTimer   += dt;
+    while(pointTimer >= 1){
+      pointTimer -= 1;
+      score += 10;
+    }
+  }
+  ctx.clearRect(0,0,c.width,c.height);
+
+  // update
+  updateStars(dt);
+  handleInput(dt);
+  updatePlayer(dt);
+  updateLasers(dt);
+  updateEnemies(dt);
+  updateExplosions(dt);
+
+  // draw
+  drawStars();
+  drawLasers();
+  drawEnemies();
+  drawExplosions();
+  drawPlayer();
+
+  // UI
+  scoreEl.textContent=`Score: ${score}`;
+  healthEl.textContent=`Health: ${health}`;
+  if(timeEl) timeEl.textContent = `Time: ${Math.floor(survivalTime)}s`;
+  ammoEl.textContent=`Ammo: ${ammo}`;
+
+  // update ammo bar width
+  if(ammoBar){
+    const ratio = ammo / maxAmmo;
+    ammoBar.style.width = Math.max(0, Math.min(1, ratio)) * 100 + '%';
+  }
+
+  requestAnimationFrame(animate);
+}
+
+function handleInput(dt){
+  // Use only arrow keys for movement
+  if(keys['arrowleft'])  player.vx-=player.accel*dt;
+  if(keys['arrowright']) player.vx+=player.accel*dt;
+  if(keys['arrowup'])    player.vy-=player.accel*dt;
+  if(keys['arrowdown'])  player.vy+=player.accel*dt;
+  // Use spacebar to shoot.  Other keys (K, Enter) are no longer active.
+  if(keys[' ']) shoot();
+}
+</script>
+</body>
+</html>
+neo_space_shooter_modified (25).html
+33 KB
