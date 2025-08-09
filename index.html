@@ -19,9 +19,7 @@
     :root{--ink:#e6edf6;--sub:#9fb3d9;--line:#23324f;--green:#00e676;--green2:#00c853}
     #menuOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:radial-gradient(120% 140% at 50% 20%,#0b1130 0%,#000 65%);z-index:300}
     .menuCard{width:min(520px,92vw);border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#0c142b 0%,#070b18 100%);box-shadow:0 16px 48px rgba(0,0,0,.6);padding:22px;display:flex;flex-direction:column;gap:14px;align-items:stretch}
-    .menuTop{display:flex;justify-content:space-between;align-items:center}
-    .menuBrand{font-size:28px;font-weight:900;letter-spacing:.3px;color:var(--ink)}
-    .menuHint{opacity:.75;font-size:12px;color:var(--sub)}
+    .menuHint{opacity:.75;font-size:12px;color:var(--sub);align-self:flex-end}
     .menuTitle{font-size:24px;font-weight:900;color:var(--ink)}
     .menuSub{font-size:13px;color:var(--sub)}
     .menuChips{display:flex;gap:8px;flex-wrap:wrap}
@@ -53,12 +51,10 @@
     <div id="ammoBar"></div>
   </div>
 
+  <!-- Menu (brand text removed) -->
   <div id="menuOverlay" aria-modal="true" role="dialog">
     <div class="menuCard">
-      <div class="menuTop">
-        <div class="menuBrand">Neo Arcade</div>
-        <div class="menuHint">Enter or Space</div>
-      </div>
+      <div class="menuHint">Enter or Space</div>
       <div class="menuTitle">Neo Space Shooter</div>
       <div class="menuSub">Open and choose difficulty</div>
       <div class="menuChips">
@@ -98,10 +94,9 @@ const c = document.getElementById('game');
 const ctx = c.getContext('2d');
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
-function resizeCanvas(){c.width = innerWidth; c.height = innerHeight;}
+function resizeCanvas(){c.width = innerWidth; c.height = innerHeight; initStars();} // re-init stars on resize ✅
 
 const randBetween = (min,max)=>Math.random()*(max-min)+min;
-function angleTo(x1,y1,x2,y2){return Math.atan2(y2-y1,x2-x1);}
 function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
 
 const asteroidImg = new Image();
@@ -130,12 +125,6 @@ window.addEventListener('keydown', e => {
     if(e.key === '3') { difficulty = 'hard'; hideIntro(); }
   }
 });
-
-const memeData = {
-  low: { src: "", title: "Under 1000? Professional Idiot!", message: "Yikes! Your score is under 1000. You are a professional idiot! Time to sharpen those piloting skills." },
-  mid: { src: "", title: "Not Good Enough!", message: "You scored between 1000 and 2000 points. Not bad, but you can do better." },
-  high:{ src: "", title: "Touch Some Grass!", message: "Whoa, over 10,000 points! Perhaps it's time to step outside and see some nature." }
-};
 
 const stars=[];
 function initStars(){
@@ -312,6 +301,13 @@ function spawnEnemy(){
   enemies.push({type:'asteroid', x,y,vx,vy,size,hp,angle,spin,shape,craters,speckles});
 }
 
+// precise circle hit for lasers ✅
+function laserHitsAsteroid(l,e){
+  const dx = l.x - e.x, dy = l.y - e.y;
+  const r = e.size + 3; // small pad for laser size
+  return (dx*dx + dy*dy) <= r*r;
+}
+
 function updateEnemies(dt){
   enemyTimer -= dt;
   if(enemyTimer <= 0){
@@ -329,6 +325,8 @@ function updateEnemies(dt){
     if(e.type === 'asteroid'){e.angle += e.spin * dt;}
     if(e.x < -e.size) e.x = c.width + e.size;
     if(e.x > c.width + e.size) e.x = -e.size;
+
+    // player collision
     const collisionDist = e.size + 14;
     if(distance(e,player) < collisionDist){
       if(e.type === 'energy'){
@@ -338,15 +336,17 @@ function updateEnemies(dt){
         continue;
       } else if(e.type === 'asteroid'){
         explosions.push(makeExplosion(player.x,player.y));
-        health--;
+        health = Math.max(0, health - 1);   // clamp ✅
         enemies.splice(i,1);
-        if(health <= 0) endGame();
+        if(health <= 0){ endGame(); break; } // stop further hits this frame ✅
         continue;
       }
     }
+
+    // laser collision (precise) ✅
     if(e.type === 'asteroid'){
       for(let j=lasers.length-1;j>=0;j--){
-        if(Math.abs(lasers[j].x - e.x) < (e.size + 4) && Math.abs(lasers[j].y - e.y) < (e.size + 4)){
+        if(laserHitsAsteroid(lasers[j], e)){
           lasers.splice(j,1);
           e.hp--;
           explosions.push(makeExplosion(e.x,e.y));
@@ -358,6 +358,7 @@ function updateEnemies(dt){
         }
       }
     }
+
     if(e.y > c.height + e.size){enemies.splice(i,1);}
   }
 }
@@ -501,10 +502,12 @@ function hideMemeAndRestart(){
   if(memeOverlay) memeOverlay.style.display = 'none';
   startGame();
 }
-introOverlay.addEventListener('click', hideIntro);
+
+// (Removed: clicking anywhere on the intro overlay to start) ✅
 window.addEventListener('keydown', e => {
   if(showingIntro && (e.key === 'Enter' || e.key === ' ')){ hideIntro(); }
 });
+
 function startGame(){
   score=0; health=3; ammo=maxAmmo;
   survivalTime = 0;
@@ -514,6 +517,8 @@ function startGame(){
   restartBtn.style.display='none';
   if(memeOverlay) memeOverlay.style.display='none';
   resetPlayer();
+  // clear sticky inputs so holding keys in menu doesn't auto fire/move ✅
+  for(const k in keys){ keys[k]=false; }
   last = performance.now();
   animate();
 }
@@ -567,12 +572,15 @@ function handleInput(dt){
 
 const menuOverlay=document.getElementById('menuOverlay');
 const menuPlay=document.getElementById('menuPlay');
+// show menu first
 introOverlay.style.display='none';
 showingIntro=false;
 menuOverlay.style.display='flex';
 function openIntro(){menuOverlay.style.display='none';introOverlay.style.display='flex';showingIntro=true}
 if(menuPlay)menuPlay.addEventListener('click',openIntro);
-window.addEventListener('keydown',e=>{if(menuOverlay.style.display!=='none'&&(e.key==='Enter'||e.key===' '))openIntro();});
+window.addEventListener('keydown',e=>{
+  if(menuOverlay.style.display!=='none'&&(e.key==='Enter'||e.key===' ')) openIntro();
+});
 </script>
 </body>
 </html>
