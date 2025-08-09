@@ -11,20 +11,19 @@
     #restartBtn{margin:auto;display:none;padding:12px 32px;font-size:20px;font-weight:bold;border:none;border-radius:6px;background:#ff0055;color:#fff;cursor:pointer;box-shadow:0 0 12px #ff005580}
     #ammoBarContainer{position:fixed;bottom:8px;left:8px;width:220px;height:14px;background:#333;border-radius:7px;pointer-events:none;overflow:hidden;z-index:10}
     #ammoBar{height:100%;background:#88ddee}
-    #introOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);color:#fff;display:none;flex-direction:column;justify-content:center;align-items:center;text-align:center;z-index:100;pointer-events:auto}
+    #introOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;z-index:100;pointer-events:auto}
     #introContent{max-width:500px;padding:24px;background:rgba(0,0,0,0.6);border:1px solid #444;border-radius:8px;}
     #introContent ul{list-style:disc;margin-left:20px;text-align:left;}
     #introContent h1{margin-top:0;font-size:40px;}
-    #menuOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);color:#fff;display:flex;justify-content:center;align-items:center;text-align:center;z-index:150;pointer-events:auto}
-    #menuContent{max-width:760px;width:90%;padding:24px;background:rgba(0,0,0,0.6);border:1px solid #444;border-radius:12px}
-    #menuContent h1{margin:0 0 16px 0;font-size:40px}
-    .gameGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
-    .gameCard{display:flex;flex-direction:column;gap:10px;align-items:stretch;border:none;border-radius:12px;background:#111;cursor:pointer;box-shadow:0 0 0 1px #333 inset;padding:12px;transition:transform .1s, box-shadow .2s}
-    .gameCard:focus,.gameCard:hover{transform:translateY(-2px);box-shadow:0 0 0 1px #555 inset,0 8px 24px rgba(0,0,0,.5)}
-    .thumb{height:140px;border-radius:10px;background:radial-gradient(120px 80px at 30% 30%,#2dd4ff,#1d4ed8 60%,#000 100%);position:relative;overflow:hidden}
-    .thumb:after{content:"";position:absolute;inset:0;background:radial-gradient(200px 100px at 70% 60%,rgba(255,255,255,.15),transparent 60%)}
-    .title{font-size:20px;font-weight:800;text-align:left}
-    .hint{opacity:.7;margin-top:10px;font-size:14px}
+    #menuOverlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(90% 120% at 50% 20%,#0c1430 0%,#000 60%);color:#fff;z-index:300;pointer-events:auto}
+    #menuContent{max-width:820px;width:92%;padding:20px;background:rgba(0,0,0,.55);border:1px solid #26324d;border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.55)}
+    #menuHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px}
+    #menuHeader h1{margin:0;font-size:42px;letter-spacing:.5px}
+    .gameGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+    .gameCard{background:#0b1020;border:1px solid #2a3b6b;border-radius:14px;padding:16px 18px;cursor:pointer;text-align:left;box-shadow:0 0 0 1px rgba(173,216,230,.1) inset;transition:transform .12s,box-shadow .2s;display:flex;flex-direction:column;gap:6px}
+    .gameCard:focus,.gameCard:hover{transform:translateY(-2px);box-shadow:0 0 0 1px #4a6bd4 inset,0 8px 24px rgba(0,0,0,.5)}
+    .gameTitle{font-size:20px;font-weight:800}
+    .gameSub{opacity:.8;font-size:12px}
   </style>
 </head>
 <body tabindex="0">
@@ -51,14 +50,16 @@
 
   <div id="menuOverlay">
     <div id="menuContent">
-      <h1>Choose a Game</h1>
+      <div id="menuHeader">
+        <h1>Arcade Select</h1>
+        <div style="opacity:.75;font-size:13px">Enter/Space to select</div>
+      </div>
       <div class="gameGrid">
-        <button id="startNeoBtn" class="gameCard">
-          <div class="thumb"></div>
-          <div class="title">Neo Space Shooter</div>
+        <button id="startNeo" class="gameCard">
+          <div class="gameTitle">Neo Space Shooter</div>
+          <div class="gameSub">Open and choose difficulty</div>
         </button>
       </div>
-      <div class="hint">Press Enter or Space to start</div>
     </div>
   </div>
 
@@ -94,6 +95,8 @@ const randBetween = (min,max)=>Math.random()*(max-min)+min;
 function angleTo(x1,y1,x2,y2){return Math.atan2(y2-y1,x2-x1);}
 function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
 
+const asteroidImg = new Image();
+
 const ammoBar = document.getElementById('ammoBar');
 const introOverlay = document.getElementById('introOverlay');
 const memeOverlay = document.getElementById('memeOverlay');
@@ -101,8 +104,6 @@ const memeBtn = document.getElementById('memeBtn');
 const memeTitle = document.getElementById('memeTitle');
 const memeMessage = document.getElementById('memeMessage');
 const memeImg = document.getElementById('memeImg');
-const menuOverlay = document.getElementById('menuOverlay');
-const startNeoBtn = document.getElementById('startNeoBtn');
 
 const diffButtons = document.querySelectorAll('.diffButton');
 diffButtons.forEach(btn => {
@@ -458,8 +459,7 @@ window.addEventListener('keyup',e=>{
 
 let score=0, health=3;
 let running=false;
-let showingIntro=false;
-let menuShowing=true;
+let showingIntro=true;
 let survivalTime = 0;
 let pointTimer   = 0;
 
@@ -478,7 +478,7 @@ document.body.focus();
 
 let last=performance.now();
 initStars();
-
+introOverlay.style.display = 'flex';
 function hideIntro(){
   if(!showingIntro) return;
   showingIntro = false;
@@ -492,7 +492,10 @@ function hideMemeAndRestart(){
   if(memeOverlay) memeOverlay.style.display = 'none';
   startGame();
 }
-
+introOverlay.addEventListener('click', hideIntro);
+window.addEventListener('keydown', e => {
+  if(showingIntro && (e.key === 'Enter' || e.key === ' ')){ hideIntro(); }
+});
 function startGame(){
   score=0; health=3; ammo=maxAmmo;
   survivalTime = 0;
@@ -501,10 +504,6 @@ function startGame(){
   running=true;
   restartBtn.style.display='none';
   if(memeOverlay) memeOverlay.style.display='none';
-  introOverlay.style.display='none';
-  showingIntro=false;
-  menuOverlay.style.display='none';
-  menuShowing=false;
   resetPlayer();
   last = performance.now();
   animate();
@@ -557,10 +556,14 @@ function handleInput(dt){
   if(keys[' ']) shoot();
 }
 
-startNeoBtn.addEventListener('click', ()=>{startGame()});
-window.addEventListener('keydown', e=>{
-  if(menuShowing && (e.key==='Enter' || e.key===' ')){ startGame(); }
-});
+const menuOverlay=document.getElementById('menuOverlay');
+const startNeo=document.getElementById('startNeo');
+introOverlay.style.display='none';
+showingIntro=false;
+if(menuOverlay) menuOverlay.style.display='flex';
+function openIntro(){if(menuOverlay) menuOverlay.style.display='none'; introOverlay.style.display='flex'; showingIntro=true;}
+if(startNeo) startNeo.addEventListener('click',openIntro);
+window.addEventListener('keydown',e=>{if(menuOverlay&&menuOverlay.style.display!=='none'&&(e.key==='Enter'||e.key===' ')) openIntro();});
 </script>
 </body>
 </html>
