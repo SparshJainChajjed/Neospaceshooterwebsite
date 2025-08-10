@@ -1,9 +1,19 @@
+To address your request, I'll make the following changes to the code:
+
+1. **Remove the "FEATURED" badge** from both "Coming Soon" cards.
+2. **Revert the copyright text** back to the earlier version (remove the copyright line entirely).
+3. **Change the heading** from "Game Universe" to "Sparsh Games".
+4. **Ensure the game description and other elements remain as in the earlier version**.
+
+Here's the updated code:
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Game Selection - Neo Space Shooter</title>
+  <title>Sparsh Games - Neo Space Shooter</title>
   <style>
     * {
       margin: 0;
@@ -177,25 +187,6 @@
       transform: translateY(1px);
     }
     
-    .featured {
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .featured::after {
-      content: "FEATURED";
-      position: absolute;
-      top: 15px;
-      right: -30px;
-      background: linear-gradient(45deg, #ff8a00, #da1b60);
-      color: white;
-      padding: 5px 30px;
-      font-size: 0.8rem;
-      font-weight: bold;
-      transform: rotate(45deg);
-      z-index: 3;
-    }
-    
     footer {
       text-align: center;
       padding: 30px 0;
@@ -233,7 +224,7 @@
   <!-- Game Selection Interface -->
   <div class="container" id="selectionInterface">
     <header>
-      <h1>Game Universe</h1>
+      <h1>Sparsh Games</h1>
       <p class="subtitle">Explore our collection of amazing games. Select one to start playing!</p>
     </header>
     
@@ -272,9 +263,7 @@
       </div>
     </div>
     
-    <footer>
-      <p>© 2025 Sparsh Jain Chajjed | All rights reserved</p>
-    </footer>
+    <!-- Removed the footer with copyright -->
   </div>
   
   <!-- Game Container (hidden initially) -->
@@ -784,111 +773,4 @@
           hard:   {spawnMin: 3, spawnMax: 5, timerMin: 0.3, timerMax: 0.6}
         };
         let difficulty = 'medium';
-        const scoreEl=document.getElementById('score');
-        const healthEl=document.getElementById('health');
-        const timeEl=document.getElementById('time');
-        const restartBtn=document.getElementById('restartBtn');
-        restartBtn.onclick=startGame;
-        document.body.focus();
-
-        let last=performance.now();
-        initStars();
-        introOverlay.style.display = 'flex';
-        function hideIntro(){
-          if(!showingIntro) return;
-          showingIntro = false;
-          introOverlay.style.display = 'none';
-          startGame();
-        }
-        if(memeBtn){
-          memeBtn.addEventListener('click', () => { hideMemeAndRestart(); });
-        }
-        function hideMemeAndRestart(){
-          if(memeOverlay) memeOverlay.style.display = 'none';
-          startGame();
-        }
-        introOverlay.addEventListener('click', hideIntro);
-        window.addEventListener('keydown', e => {
-          if(showingIntro && (e.key === 'Enter' || e.key === ' ')){ hideIntro(); }
-        });
-        function startGame(){
-          score=0; health=3; ammo=maxAmmo;
-          survivalTime = 0;
-          pointTimer   = 0;
-          enemies.length=lasers.length=explosions.length=0;
-          running=true;
-          restartBtn.style.display='none';
-          if(memeOverlay) memeOverlay.style.display='none';
-          resetPlayer();
-          last = performance.now();
-          animate();
-        }
-        function endGame(){
-          running = false;
-          if (memeTitle) memeTitle.textContent = 'Game Over';
-          if (memeMessage) memeMessage.textContent = 'Please go and touch grass now.';
-          if (memeImg) memeImg.style.display = 'none';
-          if (memeOverlay) memeOverlay.style.display = 'flex';
-          restartBtn.style.display = 'none';
-        }
-
-        function animate(now=performance.now()){
-          if(!running)return;
-          const dt=(now-last)/1000; last=now;
-          if(running){
-            survivalTime += dt;
-            pointTimer   += dt;
-            while(pointTimer >= 1){ pointTimer -= 1; score += 10; }
-          }
-          ctx.clearRect(0,0,c.width,c.height);
-          updateStars(dt);
-          handleInput(dt);
-          updatePlayer(dt);
-          updateLasers(dt);
-          updateEnemies(dt);
-          updateExplosions(dt);
-          drawStars();
-          drawLasers();
-          drawEnemies();
-          drawExplosions();
-          drawPlayer();
-          scoreEl.textContent=\`Score: \${score}\`;
-          healthEl.textContent=\`Health: \${health}\`;
-          if(timeEl) timeEl.textContent = \`Time: \${Math.floor(survivalTime)}s\`;
-          ammoEl.textContent=\`Ammo: \${ammo}\`;
-          if(ammoBar){
-            const ratio = ammo / maxAmmo;
-            ammoBar.style.width = Math.max(0, Math.min(1, ratio)) * 100 + '%';
-          }
-          requestAnimationFrame(animate);
-        }
-
-        function handleInput(dt){
-          if(keys['arrowleft'])  player.vx-=player.accel*dt;
-          if(keys['arrowright']) player.vx+=player.accel*dt;
-          if(keys['arrowup'])    player.vy-=player.accel*dt;
-          if(keys['arrowdown'])  player.vy+=player.accel*dt;
-          if(keys[' ']) shoot();
-        }
-        <\/script>
-        </body>
-        </html>
-      `;
-      
-      // Initialize the game after a short delay to allow DOM to update
-      setTimeout(() => {
-        const iframe = document.createElement('iframe');
-        iframe.style.width = '100%';
-        iframe.style.height = '100%';
-        iframe.style.border = 'none';
-        iframe.srcdoc = gameContainer.innerHTML;
-        gameContainer.innerHTML = '';
-        gameContainer.appendChild(iframe);
-      }, 100);
-    }
-    
-    // Initialize
-    createStars();
-  </script>
-</body>
-</html>
+       
