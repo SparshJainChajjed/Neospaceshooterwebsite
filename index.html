@@ -1,19 +1,9 @@
-To address your request, I'll make the following changes to the code:
-
-1. **Remove the "FEATURED" badge** from both "Coming Soon" cards.
-2. **Revert the copyright text** back to the earlier version (remove the copyright line entirely).
-3. **Change the heading** from "Game Universe" to "Sparsh Games".
-4. **Ensure the game description and other elements remain as in the earlier version**.
-
-Here's the updated code:
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sparsh Games - Neo Space Shooter</title>
+  <title>Game Selection - Neo Space Shooter</title>
   <style>
     * {
       margin: 0;
@@ -186,6 +176,28 @@ Here's the updated code:
     .play-button:active {
       transform: translateY(1px);
     }
+
+    /* Hide disabled buttons (the pink bar on Coming Soon cards) */
+    .play-button[disabled] { display: none; }
+    
+    .featured {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .featured::after {
+      content: "FEATURED";
+      position: absolute;
+      top: 15px;
+      right: -30px;
+      background: linear-gradient(45deg, #ff8a00, #da1b60);
+      color: white;
+      padding: 5px 30px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      transform: rotate(45deg);
+      z-index: 3;
+    }
     
     footer {
       text-align: center;
@@ -218,13 +230,11 @@ Here's the updated code:
   </style>
 </head>
 <body>
-  <!-- Background stars -->
   <div class="stars" id="stars"></div>
   
-  <!-- Game Selection Interface -->
   <div class="container" id="selectionInterface">
     <header>
-      <h1>Sparsh Games</h1>
+      <h1>Game Universe</h1>
       <p class="subtitle">Explore our collection of amazing games. Select one to start playing!</p>
     </header>
     
@@ -235,7 +245,7 @@ Here's the updated code:
         </div>
         <div class="game-content">
           <h2 class="game-title">Neo Space Shooter</h2>
-          <p class="game-description">Pilot your advanced spacecraft through treacherous asteroid fields. Collect energy orbs to replenish your ammunition and survive as long as possible in this adrenaline-pumping space adventure.</p>
+          <p class="game-description">Navigate through asteroid fields, collect energy orbs, and survive as long as possible in this intense space shooter adventure.</p>
           <button class="play-button" id="playNeoSpace">PLAY NOW</button>
         </div>
       </div>
@@ -263,68 +273,48 @@ Here's the updated code:
       </div>
     </div>
     
-    <!-- Removed the footer with copyright -->
+    <footer></footer>
   </div>
   
-  <!-- Game Container (hidden initially) -->
-  <div class="game-container" id="gameContainer">
-    <!-- The game content will be loaded here -->
-  </div>
+  <div class="game-container" id="gameContainer"></div>
 
   <script>
-    // Create background stars
     function createStars() {
       const starsContainer = document.getElementById('stars');
       const starCount = 200;
-      
       for (let i = 0; i < starCount; i++) {
         const star = document.createElement('div');
         star.classList.add('star');
-        
-        // Random position
         const x = Math.random() * 100;
         const y = Math.random() * 100;
         star.style.left = `${x}%`;
         star.style.top = `${y}%`;
-        
-        // Random size
         const size = Math.random() * 3;
         star.style.width = `${size}px`;
         star.style.height = `${size}px`;
-        
-        // Random animation duration
         const duration = 2 + Math.random() * 5;
         star.style.setProperty('--duration', `${duration}s`);
-        
         starsContainer.appendChild(star);
       }
     }
     
-    // Show the game when the play button is clicked
     document.getElementById('playNeoSpace').addEventListener('click', function(e) {
       e.stopPropagation();
       startGame();
     });
     
-    // Also allow clicking on the card itself
     document.getElementById('neoSpaceCard').addEventListener('click', function() {
       startGame();
     });
     
-    // Start the game
     function startGame() {
       document.getElementById('selectionInterface').style.display = 'none';
       document.getElementById('gameContainer').style.display = 'block';
-      
-      // Load the game content
       loadGame();
     }
     
-    // Load the Neo Space Shooter game
     function loadGame() {
       const gameContainer = document.getElementById('gameContainer');
-      
-      // Game HTML content
       gameContainer.innerHTML = `
         <!DOCTYPE html>
         <html lang="en">
@@ -468,13 +458,14 @@ Here's the updated code:
           if(player.cooldown>0) player.cooldown-=dt;
         }
         function drawPlayer(){
+          const ctx = c.getContext('2d');
           ctx.save();
           ctx.translate(player.x, player.y);
           ctx.rotate(player.angle + Math.PI/2);
           ctx.fillStyle = 'orange';
           ctx.beginPath();
           ctx.moveTo(-6, 22);
-          ctx.lineTo(0, 28 + randBetween(8, 12));
+          ctx.lineTo(0, 28 + (Math.random()*4+8));
           ctx.lineTo(6, 22);
           ctx.closePath();
           ctx.fill();
@@ -554,6 +545,7 @@ Here's the updated code:
           }
         }
         function drawLasers(){
+          const ctx = c.getContext('2d');
           ctx.fillStyle='#8ff';
           for(const l of lasers){ctx.fillRect(l.x-2,l.y-12,4,14);}
         }
@@ -564,44 +556,44 @@ Here's the updated code:
         function spawnEnemy(){
           if(Math.random() < 0.2){
             const orbSize = 14;
-            const x = randBetween(orbSize, c.width - orbSize);
+            const x = Math.random() * (c.width - orbSize*2) + orbSize;
             const y = -orbSize;
-            const vx = randBetween(-40, 40);
-            const vy = randBetween(60, 120);
+            const vx = (Math.random()*80)-40;
+            const vy = (Math.random()*60)+60;
             enemies.push({type:'energy', x, y, vx, vy, size: orbSize});
             return;
           }
-          const size = randBetween(25, 100);
-          const x = randBetween(size, c.width - size);
+          const size = (Math.random()*75)+25;
+          const x = Math.random() * (c.width - size*2) + size;
           const y = -size;
-          const vx = randBetween(-60, 60);
-          const vy = randBetween(40, 100);
+          const vx = (Math.random()*120)-60;
+          const vy = (Math.random()*60)+40;
           const hp = 2;
           const angle = Math.random() * Math.PI * 2;
           const spin  = (Math.random() * 2 - 1) * 0.4;
-          const vertexCount = Math.floor(randBetween(8, 14));
+          const vertexCount = Math.floor((Math.random()*6)+8);
           const shape = [];
           for(let i=0; i<vertexCount; i++){
             const baseAng = (Math.PI * 2 * i) / vertexCount;
             const jitter = (Math.random() - 0.5) * ((Math.PI * 2) / vertexCount) * 0.2;
             const ang = baseAng + jitter;
-            const radiusMod = randBetween(0.8, 1.2);
+            const radiusMod = (Math.random()*0.4)+0.8;
             shape.push({x: Math.cos(ang) * radiusMod, y: Math.sin(ang) * radiusMod});
           }
-          const craterCount = Math.floor(randBetween(5, 10));
+          const craterCount = Math.floor((Math.random()*5)+5);
           const craters = [];
           for(let i=0; i<craterCount; i++){
             const ang2 = Math.random() * Math.PI * 2;
             const dist = Math.random() * 0.5;
-            const r = randBetween(0.05, 0.12);
+            const r = (Math.random()*0.07)+0.05;
             craters.push({x: Math.cos(ang2) * dist, y: Math.sin(ang2) * dist, r});
           }
-          const speckleCount = Math.floor(randBetween(15, 30));
+          const speckleCount = Math.floor((Math.random()*15)+15);
           const speckles = [];
           for(let i=0; i<speckleCount; i++){
             const ang3 = Math.random() * Math.PI * 2;
             const dist3 = Math.random() * 0.6;
-            const r3   = randBetween(0.02, 0.05);
+            const r3   = (Math.random()*0.03)+0.02;
             speckles.push({x: Math.cos(ang3) * dist3, y: Math.sin(ang3) * dist3, r: r3});
           }
           enemies.push({type:'asteroid', x,y,vx,vy,size,hp,angle,spin,shape,craters,speckles});
@@ -615,7 +607,7 @@ Here's the updated code:
             const maxSpawn = settings.spawnMax;
             const spawnCount = minSpawn + Math.floor(Math.random() * (maxSpawn - minSpawn + 1));
             for(let i=0; i < spawnCount; i++) spawnEnemy();
-            enemyTimer = randBetween(settings.timerMin, settings.timerMax);
+            enemyTimer = (Math.random()*(settings.timerMax-settings.timerMin))+settings.timerMin;
           }
           for(let i=enemies.length-1;i>=0;i--){
             const e = enemies[i];
@@ -625,7 +617,7 @@ Here's the updated code:
             if(e.x < -e.size) e.x = c.width + e.size;
             if(e.x > c.width + e.size) e.x = -e.size;
             const collisionDist = e.size + 14;
-            if(distance(e,player) < collisionDist){
+            if(Math.hypot(e.x-player.x,e.y-player.y) < collisionDist){
               if(e.type === 'energy'){
                 reloadAmmo();
                 explosions.push(makeExplosion(e.x,e.y));
@@ -658,6 +650,7 @@ Here's the updated code:
         }
 
         function drawEnemies(){
+          const ctx = c.getContext('2d');
           for(const e of enemies){
             if(e.type === 'asteroid'){
               ctx.save();
@@ -725,7 +718,7 @@ Here's the updated code:
           const p=[]; const count=18;
           for(let i=0;i<count;i++){
             const a=Math.random()*Math.PI*2;
-            p.push({x,y, vx:Math.cos(a)*randBetween(40,140),vy:Math.sin(a)*randBetween(40,140),life:randBetween(0.7,1.1)});
+            p.push({x,y, vx:Math.cos(a)*((Math.random()*100)+40),vy:Math.sin(a)*((Math.random()*100)+40),life:((Math.random()*0.4)+0.7)});
           }
           return {p};
         }
@@ -740,6 +733,7 @@ Here's the updated code:
           }
         }
         function drawExplosions(){
+          const ctx = c.getContext('2d');
           ctx.fillStyle='#ff7744';
           for(const ex of explosions){
             for(const p of ex.p){
@@ -773,4 +767,110 @@ Here's the updated code:
           hard:   {spawnMin: 3, spawnMax: 5, timerMin: 0.3, timerMax: 0.6}
         };
         let difficulty = 'medium';
-       
+        const scoreEl=document.getElementById('score');
+        const healthEl=document.getElementById('health');
+        const timeEl=document.getElementById('time');
+        const restartBtn=document.getElementById('restartBtn');
+        restartBtn.onclick=startGame;
+        document.body.focus();
+
+        let last=performance.now();
+        initStars();
+        introOverlay.style.display = 'flex';
+        function hideIntro(){
+          if(!showingIntro) return;
+          showingIntro = false;
+          introOverlay.style.display = 'none';
+          startGame();
+        }
+        if(memeBtn){
+          memeBtn.addEventListener('click', () => { hideMemeAndRestart(); });
+        }
+        function hideMemeAndRestart(){
+          if(memeOverlay) memeOverlay.style.display = 'none';
+          startGame();
+        }
+        introOverlay.addEventListener('click', hideIntro);
+        window.addEventListener('keydown', e => {
+          if(showingIntro && (e.key === 'Enter' || e.key === ' ')){ hideIntro(); }
+        });
+        function startGame(){
+          score=0; health=3; ammo=maxAmmo;
+          survivalTime = 0;
+          pointTimer   = 0;
+          enemies.length=lasers.length=explosions.length=0;
+          running=true;
+          restartBtn.style.display='none';
+          if(memeOverlay) memeOverlay.style.display='none';
+          resetPlayer();
+          last = performance.now();
+          animate();
+        }
+        function endGame(){
+          running = false;
+          if (memeTitle) memeTitle.textContent = 'Game Over';
+          if (memeMessage) memeMessage.textContent = 'Please go and touch grass now.';
+          if (memeImg) memeImg.style.display = 'none';
+          if (memeOverlay) memeOverlay.style.display = 'flex';
+          restartBtn.style.display = 'none';
+        }
+
+        function animate(now=performance.now()){
+          if(!running)return;
+          const dt=(now-last)/1000; last=now;
+          if(running){
+            survivalTime += dt;
+            pointTimer   += dt;
+            while(pointTimer >= 1){ pointTimer -= 1; score += 10; }
+          }
+          const ctx = c.getContext('2d');
+          ctx.clearRect(0,0,c.width,c.height);
+          updateStars(dt);
+          handleInput(dt);
+          updatePlayer(dt);
+          updateLasers(dt);
+          updateEnemies(dt);
+          updateExplosions(dt);
+          drawStars();
+          drawLasers();
+          drawEnemies();
+          drawExplosions();
+          drawPlayer();
+          scoreEl.textContent=`Score: ${score}`;
+          healthEl.textContent=`Health: ${health}`;
+          if(timeEl) timeEl.textContent = `Time: ${Math.floor(survivalTime)}s`;
+          ammoEl.textContent=`Ammo: ${ammo}`;
+          if(ammoBar){
+            const ratio = ammo / maxAmmo;
+            ammoBar.style.width = Math.max(0, Math.min(1, ratio)) * 100 + '%';
+          }
+          requestAnimationFrame(animate);
+        }
+
+        function handleInput(dt){
+          if(keys['arrowleft'])  player.vx-=player.accel*dt;
+          if(keys['arrowright']) player.vx+=player.accel*dt;
+          if(keys['arrowup'])    player.vy-=player.accel*dt;
+          if(keys['arrowdown'])  player.vy+=player.accel*dt;
+          if(keys[' ']) shoot();
+        }
+        </script>
+        </body>
+        </html>
+      `;
+      
+      setTimeout(() => {
+        const iframe = document.createElement('iframe');
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.border = 'none';
+        iframe.srcdoc = gameContainer.innerHTML;
+        gameContainer.innerHTML = '';
+        gameContainer.appendChild(iframe);
+      }, 100);
+    }
+    
+    createStars();
+  </script>
+</body>
+</html>
