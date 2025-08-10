@@ -93,6 +93,7 @@
       backdrop-filter: blur(10px);
       position: relative;
       height: 400px;
+      cursor: pointer;
     }
     
     .game-card:hover {
@@ -211,6 +212,7 @@
       width: 100%;
       height: 100%;
       z-index: 100;
+      background: #000;
     }
     
     @media (max-width: 768px) {
@@ -236,7 +238,7 @@
     </header>
     
     <div class="game-grid">
-      <div class="game-card featured">
+      <div class="game-card featured" id="neoSpaceCard">
         <div class="game-image">
           <div class="game-icon">🚀</div>
         </div>
@@ -310,38 +312,77 @@
     }
     
     // Show the game when the play button is clicked
-    document.getElementById('playNeoSpace').addEventListener('click', function() {
+    document.getElementById('playNeoSpace').addEventListener('click', function(e) {
+      e.stopPropagation();
+      startGame();
+    });
+    
+    // Also allow clicking on the card itself
+    document.getElementById('neoSpaceCard').addEventListener('click', function() {
+      startGame();
+    });
+    
+    // Start the game
+    function startGame() {
       document.getElementById('selectionInterface').style.display = 'none';
       document.getElementById('gameContainer').style.display = 'block';
       
       // Load the game content
       loadGame();
-    });
+    }
     
     // Load the Neo Space Shooter game
     function loadGame() {
       const gameContainer = document.getElementById('gameContainer');
       
-      // Game HTML content (simplified for this example)
+      // Game HTML content
       gameContainer.innerHTML = `
-        <div style="position: relative; width: 100%; height: 100%; background: #000;">
-          <div id="ui" style="position: fixed; top: 8px; left: 8px; right: 8px; display: flex; justify-content: space-between; pointer-events: none; font-size: 24px; font-weight: bold; text-shadow: 0 0 6px #000; color: #fff; z-index: 10;">
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <title>Neo Space Shooter - Asteroids Edition</title>
+          <style>
+            html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:Arial,Helvetica,sans-serif;color:#fff}
+            #ui{position:fixed;top:8px;left:8px;right:8px;display:flex;justify-content:space-between;pointer-events:none;font-size:24px;font-weight:bold;text-shadow:0 0 6px #000}
+            canvas{display:block;width:100%;height:100%}
+            #restartBtn{margin:auto;display:none;padding:12px 32px;font-size:20px;font-weight:bold;border:none;border-radius:6px;background:#ff0055;color:#fff;cursor:pointer;box-shadow:0 0 12px #ff005580}
+            #ammoBarContainer{position:fixed;bottom:8px;left:8px;width:220px;height:14px;background:#333;border-radius:7px;pointer-events:none;overflow:hidden;z-index:10}
+            #ammoBar{height:100%;background:#88ddee}
+            #introOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;z-index:100;pointer-events:auto}
+            #introContent{max-width:500px;padding:24px;background:rgba(0,0,0,0.6);border:1px solid #444;border-radius:8px;}
+            #introContent ul{list-style:disc;margin-left:20px;text-align:left;}
+            #introContent h1{margin-top:0;font-size:40px;}
+          </style>
+        </head>
+        <body tabindex="0">
+          <div id="ui">
             <span id="score">Score: 0</span>
             <span id="health">Health: 3</span>
             <span id="time">Time: 0s</span>
           </div>
-          <button id="restartBtn" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); margin: auto; display: none; padding: 12px 32px; font-size: 20px; font-weight: bold; border: none; border-radius: 6px; background: #ff0055; color: #fff; cursor: pointer; box-shadow: 0 0 12px #ff005580; z-index: 20;">RESTART</button>
-          <canvas id="game" style="display: block; width: 100%; height: 100%;"></canvas>
-          
-          <div id="ammoBarContainer" style="position: fixed; bottom: 8px; left: 8px; width: 220px; height: 14px; background: #333; border-radius: 7px; pointer-events: none; overflow: hidden; z-index: 10;">
-            <div id="ammoBar" style="height: 100%; background: #88ddee;"></div>
+          <button id="restartBtn">RESTART</button>
+          <canvas id="game"></canvas>
+
+          <div id="memeOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);color:#fff;z-index:200;justify-content:center;align-items:center;text-align:center;font-family:Arial,sans-serif">
+            <div id="memeContent" style="max-width:500px;padding:24px;background:rgba(0,0,0,0.6);border:1px solid #444;border-radius:8px">
+              <img id="memeImg" style="max-width:100%;margin-bottom:16px;display:none;" />
+              <h2 id="memeTitle" style="margin-top:0;font-size:32px"></h2>
+              <p id="memeMessage"></p>
+              <button id="memeBtn" style="margin-top:16px;padding:12px 24px;font-size:18px;font-weight:bold;border:none;border-radius:6px;background:#ff0055;color:#fff;cursor:pointer;box-shadow:0 0 10px #ff005580">Play Again</button>
+            </div>
           </div>
-          
-          <div id="introOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; z-index: 100; pointer-events: auto;">
-            <div id="introContent" style="max-width: 500px; padding: 24px; background: rgba(0,0,0,0.6); border: 1px solid #444; border-radius: 8px;">
+
+          <div id="ammoBarContainer">
+            <div id="ammoBar"></div>
+          </div>
+
+          <div id="introOverlay">
+            <div id="introContent">
               <h1>Neo Space Shooter</h1>
               <p><strong>Controls:</strong></p>
-              <ul style="list-style: disc; margin-left: 20px; text-align: left;">
+              <ul>
                 <li>Move: Arrow keys</li>
                 <li>Shoot: Spacebar</li>
               </ul>
@@ -349,38 +390,500 @@
               <p>Avoid the drifting asteroids. Colliding with an asteroid will damage your ship.</p>
               <p>Collect the glowing blue energy orbs to instantly refill your ammo without taking any damage.</p>
               <p>Choose a difficulty below, then press <strong>Enter</strong> or click the button to begin.</p>
-              <div id="difficultySelection" style="margin-top: 16px; display: flex; gap: 12px; justify-content: center;">
-                <button class="diffButton" data-diff="easy" style="padding: 8px 16px; font-size: 16px; font-weight: bold; border: none; border-radius: 6px; background: #4caf50; color: #fff; cursor: pointer;">Easy</button>
-                <button class="diffButton" data-diff="medium" style="padding: 8px 16px; font-size: 16px; font-weight: bold; border: none; border-radius: 6px; background: #ff9800; color: #fff; cursor: pointer;">Mild</button>
-                <button class="diffButton" data-diff="hard" style="padding: 8px 16px; font-size: 16px; font-weight: bold; border: none; border-radius: 6px; background: #f44336; color: #fff; cursor: pointer;">Hard</button>
+              <div id="difficultySelection" style="margin-top:16px; display:flex; gap:12px; justify-content:center;">
+                <button class="diffButton" data-diff="easy" style="padding:8px 16px;font-size:16px;font-weight:bold;border:none;border-radius:6px;background:#4caf50;color:#fff;cursor:pointer;">Easy</button>
+                <button class="diffButton" data-diff="medium" style="padding:8px 16px;font-size:16px;font-weight:bold;border:none;border-radius:6px;background:#ff9800;color:#fff;cursor:pointer;">Mild</button>
+                <button class="diffButton" data-diff="hard" style="padding:8px 16px;font-size:16px;font-weight:bold;border:none;border-radius:6px;background:#f44336;color:#fff;cursor:pointer;">Hard</button>
               </div>
-              <p style="margin-top: 12px; font-style: italic; font-size: 14px;">(You can also press 1 for Easy, 2 for Mild, or 3 for Hard)</p>
+              <p style="margin-top:12px; font-style:italic; font-size:14px;">(You can also press 1 for Easy, 2 for Mild, or 3 for Hard)</p>
             </div>
           </div>
-        </div>
+
+        <script>
+        const c = document.getElementById('game');
+        const ctx = c.getContext('2d');
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        function resizeCanvas(){c.width = innerWidth; c.height = innerHeight;}
+
+        const randBetween = (min,max)=>Math.random()*(max-min)+min;
+        function angleTo(x1,y1,x2,y2){return Math.atan2(y2-y1,x2-x1);}
+        function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
+
+        const asteroidImg = new Image();
+
+        const ammoBar = document.getElementById('ammoBar');
+        const introOverlay = document.getElementById('introOverlay');
+        const memeOverlay = document.getElementById('memeOverlay');
+        const memeBtn = document.getElementById('memeBtn');
+        const memeTitle = document.getElementById('memeTitle');
+        const memeMessage = document.getElementById('memeMessage');
+        const memeImg = document.getElementById('memeImg');
+
+        const diffButtons = document.querySelectorAll('.diffButton');
+        diffButtons.forEach(btn => {
+          btn.addEventListener('click', e => {
+            e.stopPropagation();
+            const diff = e.currentTarget.getAttribute('data-diff');
+            if(diff) difficulty = diff;
+            hideIntro();
+          });
+        });
+        window.addEventListener('keydown', e => {
+          if(showingIntro){
+            if(e.key === '1') { difficulty = 'easy'; hideIntro(); }
+            if(e.key === '2') { difficulty = 'medium'; hideIntro(); }
+            if(e.key === '3') { difficulty = 'hard'; hideIntro(); }
+          }
+        });
+
+        const memeData = {
+          low: { src: "", title: "Under 1000? Professional Idiot!", message: "Yikes! Your score is under 1000. You are a professional idiot! Time to sharpen those piloting skills." },
+          mid: { src: "", title: "Not Good Enough!", message: "You scored between 1000 and 2000 points. Not bad, but you can do better." },
+          high:{ src: "", title: "Touch Some Grass!", message: "Whoa, over 10,000 points! Perhaps it's time to step outside and see some nature." }
+        };
+
+        const stars=[];
+        function initStars(){
+          stars.length = 0;
+          const count = Math.floor((c.width + c.height) / 2);
+          for(let i=0;i<count;i++){
+            stars.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()<0.8?1:2,s:Math.random()*0.4+0.2});
+          }
+        }
+        function updateStars(dt){
+          for(const s of stars){
+            s.y += s.s*dt*40;
+            if(s.y>c.height){s.y=0; s.x=Math.random()*c.width;}
+          }
+        }
+        function drawStars(){
+          ctx.fillStyle='#88aaff';
+          for(const s of stars){
+            ctx.globalAlpha = s.r===2?0.9:0.5;
+            ctx.fillRect(s.x,s.y,s.r,s.r);
+          }
+          ctx.globalAlpha = 1;
+        }
+
+        const player={x: c.width/2, y: c.height*0.8, vx:0, vy:0, angle:0, accel:900, maxSpeed:350, cooldown:0};
+        function resetPlayer(){Object.assign(player,{x:c.width/2,y:c.height*0.8,vx:0,vy:0,angle:0,cooldown:0});}
+        function updatePlayer(dt){
+          player.vx*=0.94; player.vy*=0.94;
+          player.x += player.vx*dt; player.y += player.vy*dt;
+          const speed = Math.hypot(player.vx,player.vy);
+          if(speed>player.maxSpeed){const f = player.maxSpeed/speed; player.vx*=f; player.vy*=f;}
+          if(player.x<0)player.x=c.width; if(player.x>c.width)player.x=0;
+          if(player.y<0)player.y=c.height; if(player.y>c.height)player.y=0;
+          player.angle = Math.atan2(player.vy,player.vx) || -Math.PI/2;
+          if(player.cooldown>0) player.cooldown-=dt;
+        }
+        function drawPlayer(){
+          ctx.save();
+          ctx.translate(player.x, player.y);
+          ctx.rotate(player.angle + Math.PI/2);
+          ctx.fillStyle = 'orange';
+          ctx.beginPath();
+          ctx.moveTo(-6, 22);
+          ctx.lineTo(0, 28 + randBetween(8, 12));
+          ctx.lineTo(6, 22);
+          ctx.closePath();
+          ctx.fill();
+          const bodyHeight = 50;
+          const bodyWidth  = 20;
+          const bodyGrad = ctx.createLinearGradient(0, -bodyHeight/2, 0, bodyHeight/2);
+          bodyGrad.addColorStop(0, '#f5f8ff');
+          bodyGrad.addColorStop(0.4, '#a8bbd9');
+          bodyGrad.addColorStop(1, '#425d92');
+          ctx.fillStyle = bodyGrad;
+          ctx.beginPath();
+          ctx.moveTo(0, -bodyHeight/2);
+          ctx.lineTo(bodyWidth * 0.4, -bodyHeight * 0.2);
+          ctx.lineTo(bodyWidth * 0.5, bodyHeight * 0.3);
+          ctx.lineTo(bodyWidth * 0.3, bodyHeight * 0.5);
+          ctx.lineTo(-bodyWidth * 0.3, bodyHeight * 0.5);
+          ctx.lineTo(-bodyWidth * 0.5, bodyHeight * 0.3);
+          ctx.lineTo(-bodyWidth * 0.4, -bodyHeight * 0.2);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = '#243f70';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+          const winGrad1 = ctx.createRadialGradient(0, -bodyHeight * 0.1, 0, 0, -bodyHeight * 0.1, 4);
+          winGrad1.addColorStop(0, 'rgba(80,110,180,0.9)');
+          winGrad1.addColorStop(1, 'rgba(20,40,80,0.4)');
+          ctx.fillStyle = winGrad1;
+          ctx.beginPath();
+          ctx.arc(0, -bodyHeight * 0.1, 4, 0, Math.PI * 2);
+          ctx.fill();
+          const winGrad2 = ctx.createRadialGradient(0, bodyHeight * 0.1, 0, 0, bodyHeight * 0.1, 4);
+          winGrad2.addColorStop(0, 'rgba(80,110,180,0.9)');
+          winGrad2.addColorStop(1, 'rgba(20,40,80,0.4)');
+          ctx.fillStyle = winGrad2;
+          ctx.beginPath();
+          ctx.arc(0, bodyHeight * 0.1, 4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = 'rgba(255,255,255,0.2)';
+          ctx.fillRect(-2, -bodyHeight * 0.2, 1, bodyHeight * 0.7);
+          ctx.fillRect(1, -bodyHeight * 0.2, 1, bodyHeight * 0.7);
+          ctx.fillStyle = '#748ec3';
+          ctx.beginPath();
+          ctx.moveTo(-bodyWidth * 0.6, bodyHeight * 0.05);
+          ctx.lineTo(-bodyWidth, bodyHeight * 0.35);
+          ctx.lineTo(-bodyWidth * 0.2, bodyHeight * 0.35);
+          ctx.closePath();
+          ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(bodyWidth * 0.6, bodyHeight * 0.05);
+          ctx.lineTo(bodyWidth, bodyHeight * 0.35);
+          ctx.lineTo(bodyWidth * 0.2, bodyHeight * 0.35);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+
+        const lasers=[];
+        const maxAmmo = 30;
+        let ammo = maxAmmo;
+        const ui = document.getElementById('ui');
+        const ammoEl = document.createElement('span');
+        ammoEl.id = 'ammo';
+        ui.appendChild(ammoEl);
+
+        function shoot(){
+          if(player.cooldown<=0 && ammo>0){
+            lasers.push({x:player.x, y:player.y-14, vy:-650});
+            player.cooldown=0.18;
+            ammo--;
+          }
+        }
+        function reloadAmmo(){ammo = maxAmmo;}
+        function updateLasers(dt){
+          for(let i=lasers.length-1;i>=0;i--){
+            const l = lasers[i]; l.y += l.vy*dt;
+            if(l.y<-20) lasers.splice(i,1);
+          }
+        }
+        function drawLasers(){
+          ctx.fillStyle='#8ff';
+          for(const l of lasers){ctx.fillRect(l.x-2,l.y-12,4,14);}
+        }
+
+        const enemies=[];
+        let enemyTimer=0;
+
+        function spawnEnemy(){
+          if(Math.random() < 0.2){
+            const orbSize = 14;
+            const x = randBetween(orbSize, c.width - orbSize);
+            const y = -orbSize;
+            const vx = randBetween(-40, 40);
+            const vy = randBetween(60, 120);
+            enemies.push({type:'energy', x, y, vx, vy, size: orbSize});
+            return;
+          }
+          const size = randBetween(25, 100);
+          const x = randBetween(size, c.width - size);
+          const y = -size;
+          const vx = randBetween(-60, 60);
+          const vy = randBetween(40, 100);
+          const hp = 2;
+          const angle = Math.random() * Math.PI * 2;
+          const spin  = (Math.random() * 2 - 1) * 0.4;
+          const vertexCount = Math.floor(randBetween(8, 14));
+          const shape = [];
+          for(let i=0; i<vertexCount; i++){
+            const baseAng = (Math.PI * 2 * i) / vertexCount;
+            const jitter = (Math.random() - 0.5) * ((Math.PI * 2) / vertexCount) * 0.2;
+            const ang = baseAng + jitter;
+            const radiusMod = randBetween(0.8, 1.2);
+            shape.push({x: Math.cos(ang) * radiusMod, y: Math.sin(ang) * radiusMod});
+          }
+          const craterCount = Math.floor(randBetween(5, 10));
+          const craters = [];
+          for(let i=0; i<craterCount; i++){
+            const ang2 = Math.random() * Math.PI * 2;
+            const dist = Math.random() * 0.5;
+            const r = randBetween(0.05, 0.12);
+            craters.push({x: Math.cos(ang2) * dist, y: Math.sin(ang2) * dist, r});
+          }
+          const speckleCount = Math.floor(randBetween(15, 30));
+          const speckles = [];
+          for(let i=0; i<speckleCount; i++){
+            const ang3 = Math.random() * Math.PI * 2;
+            const dist3 = Math.random() * 0.6;
+            const r3   = randBetween(0.02, 0.05);
+            speckles.push({x: Math.cos(ang3) * dist3, y: Math.sin(ang3) * dist3, r: r3});
+          }
+          enemies.push({type:'asteroid', x,y,vx,vy,size,hp,angle,spin,shape,craters,speckles});
+        }
+
+        function updateEnemies(dt){
+          enemyTimer -= dt;
+          if(enemyTimer <= 0){
+            const settings = difficultySettings[difficulty] || difficultySettings.medium;
+            const minSpawn = settings.spawnMin;
+            const maxSpawn = settings.spawnMax;
+            const spawnCount = minSpawn + Math.floor(Math.random() * (maxSpawn - minSpawn + 1));
+            for(let i=0; i < spawnCount; i++) spawnEnemy();
+            enemyTimer = randBetween(settings.timerMin, settings.timerMax);
+          }
+          for(let i=enemies.length-1;i>=0;i--){
+            const e = enemies[i];
+            e.x += e.vx * dt;
+            e.y += e.vy * dt;
+            if(e.type === 'asteroid'){e.angle += e.spin * dt;}
+            if(e.x < -e.size) e.x = c.width + e.size;
+            if(e.x > c.width + e.size) e.x = -e.size;
+            const collisionDist = e.size + 14;
+            if(distance(e,player) < collisionDist){
+              if(e.type === 'energy'){
+                reloadAmmo();
+                explosions.push(makeExplosion(e.x,e.y));
+                enemies.splice(i,1);
+                continue;
+              } else if(e.type === 'asteroid'){
+                explosions.push(makeExplosion(player.x,player.y));
+                health--;
+                enemies.splice(i,1);
+                if(health <= 0) endGame();
+                continue;
+              }
+            }
+            if(e.type === 'asteroid'){
+              for(let j=lasers.length-1;j>=0;j--){
+                if(Math.abs(lasers[j].x - e.x) < (e.size + 4) && Math.abs(lasers[j].y - e.y) < (e.size + 4)){
+                  lasers.splice(j,1);
+                  e.hp--;
+                  explosions.push(makeExplosion(e.x,e.y));
+                  if(e.hp <= 0){
+                    score += 100;
+                    enemies.splice(i,1);
+                  }
+                  break;
+                }
+              }
+            }
+            if(e.y > c.height + e.size){enemies.splice(i,1);}
+          }
+        }
+
+        function drawEnemies(){
+          for(const e of enemies){
+            if(e.type === 'asteroid'){
+              ctx.save();
+              ctx.translate(e.x, e.y);
+              ctx.rotate(e.angle);
+              const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, e.size);
+              grad.addColorStop(0, '#b89d6a');
+              grad.addColorStop(1, '#513f2a');
+              ctx.fillStyle = grad;
+              ctx.beginPath();
+              const pts = e.shape;
+              ctx.moveTo(pts[0].x * e.size, pts[0].y * e.size);
+              for(let i=1; i<pts.length; i++){ctx.lineTo(pts[i].x * e.size, pts[i].y * e.size);}
+              ctx.closePath();
+              ctx.fill();
+              ctx.fillStyle = 'rgba(40, 30, 20, 0.6)';
+              for(const cr of e.craters){
+                ctx.beginPath();
+                ctx.arc(cr.x * e.size, cr.y * e.size, cr.r * e.size, 0, Math.PI*2);
+                ctx.fill();
+              }
+              ctx.fillStyle = 'rgba(40, 30, 20, 0.4)';
+              for(const sp of e.speckles){
+                ctx.beginPath();
+                ctx.arc(sp.x * e.size, sp.y * e.size, sp.r * e.size, 0, Math.PI * 2);
+                ctx.fill();
+              }
+              const highlightRad = ctx.createRadialGradient(-e.size * 0.3, -e.size * 0.3, 0, -e.size * 0.3, -e.size * 0.3, e.size * 0.7);
+              highlightRad.addColorStop(0, 'rgba(255, 240, 200, 0.5)');
+              highlightRad.addColorStop(1, 'rgba(255, 240, 200, 0)');
+              ctx.fillStyle = highlightRad;
+              ctx.beginPath();
+              ctx.moveTo(pts[0].x * e.size, pts[0].y * e.size);
+              for(let i=1; i<pts.length; i++){ctx.lineTo(pts[i].x * e.size, pts[i].y * e.size);}
+              ctx.closePath();
+              ctx.fill();
+              ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+              ctx.lineWidth = 1;
+              ctx.stroke();
+              ctx.restore();
+            } else if(e.type === 'energy'){
+              ctx.save();
+              ctx.translate(e.x, e.y);
+              const orbSize = e.size;
+              const grad = ctx.createRadialGradient(0,0, orbSize*0.2, 0,0, orbSize);
+              grad.addColorStop(0, '#88e9ff');
+              grad.addColorStop(0.5, '#4466dd');
+              grad.addColorStop(1, '#001a4a');
+              ctx.fillStyle = grad;
+              ctx.beginPath();
+              ctx.arc(0,0, orbSize, 0, Math.PI*2);
+              ctx.fill();
+              ctx.strokeStyle = 'rgba(136,233,255,0.5)';
+              ctx.lineWidth = 2;
+              ctx.beginPath();
+              ctx.arc(0,0, orbSize*1.2, 0, Math.PI*2);
+              ctx.stroke();
+              ctx.restore();
+            }
+          }
+        }
+
+        const explosions=[];
+        function makeExplosion(x,y){
+          const p=[]; const count=18;
+          for(let i=0;i<count;i++){
+            const a=Math.random()*Math.PI*2;
+            p.push({x,y, vx:Math.cos(a)*randBetween(40,140),vy:Math.sin(a)*randBetween(40,140),life:randBetween(0.7,1.1)});
+          }
+          return {p};
+        }
+        function updateExplosions(dt){
+          for(let i=explosions.length-1;i>=0;i--){
+            const ex=explosions[i];
+            for(const prt of ex.p){
+              prt.x+=prt.vx*dt; prt.y+=prt.vy*dt; prt.vy+=120*dt; prt.life-=dt;
+            }
+            ex.p=ex.p.filter(p=>p.life>0);
+            if(!ex.p.length) explosions.splice(i,1);
+          }
+        }
+        function drawExplosions(){
+          ctx.fillStyle='#ff7744';
+          for(const ex of explosions){
+            for(const p of ex.p){
+              ctx.globalAlpha=Math.max(p.life,0);
+              ctx.fillRect(p.x,p.y,3,3);
+            }
+          }
+          ctx.globalAlpha=1;
+        }
+
+        const keys={};
+        const blockKeys=[' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'];
+        window.addEventListener('keydown',e=>{
+          if(blockKeys.includes(e.key)) e.preventDefault();
+          keys[e.key.toLowerCase()]=true;
+        });
+        window.addEventListener('keyup',e=>{
+          if(blockKeys.includes(e.key)) e.preventDefault();
+          keys[e.key.toLowerCase()]=false;
+        });
+
+        let score=0, health=3;
+        let running=false;
+        let showingIntro=true;
+        let survivalTime = 0;
+        let pointTimer   = 0;
+
+        const difficultySettings = {
+          easy:   {spawnMin: 1, spawnMax: 2, timerMin: 1.0, timerMax: 1.6},
+          medium: {spawnMin: 2, spawnMax: 3, timerMin: 0.5, timerMax: 1.0},
+          hard:   {spawnMin: 3, spawnMax: 5, timerMin: 0.3, timerMax: 0.6}
+        };
+        let difficulty = 'medium';
+        const scoreEl=document.getElementById('score');
+        const healthEl=document.getElementById('health');
+        const timeEl=document.getElementById('time');
+        const restartBtn=document.getElementById('restartBtn');
+        restartBtn.onclick=startGame;
+        document.body.focus();
+
+        let last=performance.now();
+        initStars();
+        introOverlay.style.display = 'flex';
+        function hideIntro(){
+          if(!showingIntro) return;
+          showingIntro = false;
+          introOverlay.style.display = 'none';
+          startGame();
+        }
+        if(memeBtn){
+          memeBtn.addEventListener('click', () => { hideMemeAndRestart(); });
+        }
+        function hideMemeAndRestart(){
+          if(memeOverlay) memeOverlay.style.display = 'none';
+          startGame();
+        }
+        introOverlay.addEventListener('click', hideIntro);
+        window.addEventListener('keydown', e => {
+          if(showingIntro && (e.key === 'Enter' || e.key === ' ')){ hideIntro(); }
+        });
+        function startGame(){
+          score=0; health=3; ammo=maxAmmo;
+          survivalTime = 0;
+          pointTimer   = 0;
+          enemies.length=lasers.length=explosions.length=0;
+          running=true;
+          restartBtn.style.display='none';
+          if(memeOverlay) memeOverlay.style.display='none';
+          resetPlayer();
+          last = performance.now();
+          animate();
+        }
+        function endGame(){
+          running = false;
+          if (memeTitle) memeTitle.textContent = 'Game Over';
+          if (memeMessage) memeMessage.textContent = 'Please go and touch grass now.';
+          if (memeImg) memeImg.style.display = 'none';
+          if (memeOverlay) memeOverlay.style.display = 'flex';
+          restartBtn.style.display = 'none';
+        }
+
+        function animate(now=performance.now()){
+          if(!running)return;
+          const dt=(now-last)/1000; last=now;
+          if(running){
+            survivalTime += dt;
+            pointTimer   += dt;
+            while(pointTimer >= 1){ pointTimer -= 1; score += 10; }
+          }
+          ctx.clearRect(0,0,c.width,c.height);
+          updateStars(dt);
+          handleInput(dt);
+          updatePlayer(dt);
+          updateLasers(dt);
+          updateEnemies(dt);
+          updateExplosions(dt);
+          drawStars();
+          drawLasers();
+          drawEnemies();
+          drawExplosions();
+          drawPlayer();
+          scoreEl.textContent=\`Score: \${score}\`;
+          healthEl.textContent=\`Health: \${health}\`;
+          if(timeEl) timeEl.textContent = \`Time: \${Math.floor(survivalTime)}s\`;
+          ammoEl.textContent=\`Ammo: \${ammo}\`;
+          if(ammoBar){
+            const ratio = ammo / maxAmmo;
+            ammoBar.style.width = Math.max(0, Math.min(1, ratio)) * 100 + '%';
+          }
+          requestAnimationFrame(animate);
+        }
+
+        function handleInput(dt){
+          if(keys['arrowleft'])  player.vx-=player.accel*dt;
+          if(keys['arrowright']) player.vx+=player.accel*dt;
+          if(keys['arrowup'])    player.vy-=player.accel*dt;
+          if(keys['arrowdown'])  player.vy+=player.accel*dt;
+          if(keys[' ']) shoot();
+        }
+        <\/script>
+        </body>
+        </html>
       `;
       
-      // Initialize the game (simplified)
+      // Initialize the game after a short delay to allow DOM to update
       setTimeout(() => {
-        const canvas = document.getElementById('game');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        
-        // Draw a simple placeholder
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        ctx.fillStyle = '#4cc9f0';
-        ctx.font = '40px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('Neo Space Shooter', canvas.width/2, canvas.height/2 - 40);
-        
-        ctx.fillStyle = '#a0a0d0';
-        ctx.font = '20px Arial';
-        ctx.fillText('Game loading...', canvas.width/2, canvas.height/2 + 20);
-        
-        // In a real implementation, we would initialize the full game here
+        const iframe = document.createElement('iframe');
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.border = 'none';
+        iframe.srcdoc = gameContainer.innerHTML;
+        gameContainer.innerHTML = '';
+        gameContainer.appendChild(iframe);
       }, 100);
     }
     
