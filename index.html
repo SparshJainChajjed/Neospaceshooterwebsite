@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Neo Space Shooter - Asteroids Edition</title>
   <style>
     html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:Arial,Helvetica,sans-serif;color:#fff}
@@ -27,6 +27,17 @@
     .menuActions{display:flex;justify-content:flex-end}
     #menuPlay{padding:12px 22px;border-radius:999px;background:linear-gradient(90deg,var(--green),var(--green2));color:#06120a;font-weight:900;letter-spacing:.3px;border:none;cursor:pointer}
     #menuPlay:active{transform:translateY(1px)}
+    #memeOverlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);color:#fff;z-index:200;justify-content:center;align-items:center;text-align:center;font-family:Arial,sans-serif}
+    #memeContent{max-width:500px;padding:24px;background:rgba(0,0,0,0.6);border:1px solid #444;border-radius:8px}
+    #memeImg{max-width:100%;margin-bottom:16px;display:none}
+    #memeTitle{margin-top:0;font-size:32px}
+    #memeBtn{margin-top:16px;padding:12px 24px;font-size:18px;font-weight:bold;border:none;border-radius:6px;background:#ff0055;color:#fff;cursor:pointer;box-shadow:0 0 10px #ff005580}
+    #difficultySelection{margin-top:16px;display:flex;gap:12px;justify-content:center}
+    .diffButton{padding:8px 16px;font-size:16px;font-weight:bold;border:none;border-radius:6px;cursor:pointer}
+    .diffButton[data-diff="easy"]{background:#4caf50;color:#fff}
+    .diffButton[data-diff="medium"]{background:#ff9800;color:#fff}
+    .diffButton[data-diff="hard"]{background:#f44336;color:#fff}
+    #introOverlay p.note{margin-top:12px;font-style:italic;font-size:14px}
   </style>
 </head>
 <body tabindex="0">
@@ -35,15 +46,15 @@
     <span id="health">Health: 3</span>
     <span id="time">Time: 0s</span>
   </div>
-  <button id="restartBtn">RESTART</button>
+  <button id="restartBtn" type="button">RESTART</button>
   <canvas id="game"></canvas>
 
-  <div id="memeOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);color:#fff;z-index:200;justify-content:center;align-items:center;text-align:center;font-family:Arial,sans-serif">
-    <div id="memeContent" style="max-width:500px;padding:24px;background:rgba(0,0,0,0.6);border:1px solid #444;border-radius:8px">
-      <img id="memeImg" style="max-width:100%;margin-bottom:16px;display:none;" />
-      <h2 id="memeTitle" style="margin-top:0;font-size:32px"></h2>
+  <div id="memeOverlay">
+    <div id="memeContent">
+      <img id="memeImg" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="">
+      <h2 id="memeTitle">Game Over</h2>
       <p id="memeMessage"></p>
-      <button id="memeBtn" style="margin-top:16px;padding:12px 24px;font-size:18px;font-weight:bold;border:none;border-radius:6px;background:#ff0055;color:#fff;cursor:pointer;box-shadow:0 0 10px #ff005580">Play Again</button>
+      <button id="memeBtn" type="button">Play Again</button>
     </div>
   </div>
 
@@ -63,7 +74,7 @@
         <span class="menuChip">Shooter</span>
       </div>
       <div class="menuActions">
-        <button id="menuPlay">Play</button>
+        <button id="menuPlay" type="button">Play</button>
       </div>
     </div>
   </div>
@@ -80,12 +91,12 @@
       <p>Avoid the drifting asteroids. Colliding with an asteroid will damage your ship.</p>
       <p>Collect the glowing blue energy orbs to instantly refill your ammo without taking any damage.</p>
       <p>Choose a difficulty below, then press <strong>Enter</strong> or click the button to begin.</p>
-      <div id="difficultySelection" style="margin-top:16px; display:flex; gap:12px; justify-content:center;">
-        <button class="diffButton" data-diff="easy" style="padding:8px 16px;font-size:16px;font-weight:bold;border:none;border-radius:6px;background:#4caf50;color:#fff;cursor:pointer;">Easy</button>
-        <button class="diffButton" data-diff="medium" style="padding:8px 16px;font-size:16px;font-weight:bold;border:none;border-radius:6px;background:#ff9800;color:#fff;cursor:pointer;">Mild</button>
-        <button class="diffButton" data-diff="hard" style="padding:8px 16px;font-size:16px;font-weight:bold;border:none;border-radius:6px;background:#f44336;color:#fff;cursor:pointer;">Hard</button>
+      <div id="difficultySelection">
+        <button class="diffButton" data-diff="easy" type="button">Easy</button>
+        <button class="diffButton" data-diff="medium" type="button">Mild</button>
+        <button class="diffButton" data-diff="hard" type="button">Hard</button>
       </div>
-      <p style="margin-top:12px; font-style:italic; font-size:14px;">(You can also press 1 for Easy, 2 for Mild, or 3 for Hard)</p>
+      <p class="note">(You can also press 1 for Easy, 2 for Mild, or 3 for Hard)</p>
     </div>
   </div>
 
