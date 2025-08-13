@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sparsh Games - Neo Space Shooter</title>
+  <title>Game Selection - Neo Space Shooter</title>
   <style>
     * {
       margin: 0;
@@ -177,6 +177,25 @@
       transform: translateY(1px);
     }
     
+    .featured {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .featured::after {
+      content: "FEATURED";
+      position: absolute;
+      top: 15px;
+      right: -30px;
+      background: linear-gradient(45deg, #ff8a00, #da1b60);
+      color: white;
+      padding: 5px 30px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      transform: rotate(45deg);
+      z-index: 3;
+    }
+    
     footer {
       text-align: center;
       padding: 30px 0;
@@ -214,7 +233,7 @@
   <!-- Game Selection Interface -->
   <div class="container" id="selectionInterface">
     <header>
-      <h1>Sparsh Games</h1>
+      <h1>Game Universe</h1>
       <p class="subtitle">Explore our collection of amazing games. Select one to start playing!</p>
     </header>
     
@@ -225,7 +244,7 @@
         </div>
         <div class="game-content">
           <h2 class="game-title">Neo Space Shooter</h2>
-          <p class="game-description">Pilot your advanced spacecraft through treacherous asteroid fields. Collect energy orbs to replenish your ammunition and survive as long as possible in this adrenaline-pumping space adventure.</p>
+          <p class="game-description">Navigate through asteroid fields, collect energy orbs, and survive as long as possible in this intense space shooter adventure.</p>
           <button class="play-button" id="playNeoSpace">PLAY NOW</button>
         </div>
       </div>
@@ -237,7 +256,6 @@
         <div class="game-content">
           <h2 class="game-title">Coming Soon</h2>
           <p class="game-description">More exciting games are on their way. Stay tuned for new releases and updates.</p>
-          <button class="play-button" disabled>COMING SOON</button>
         </div>
       </div>
       
@@ -248,10 +266,13 @@
         <div class="game-content">
           <h2 class="game-title">Coming Soon</h2>
           <p class="game-description">More exciting games are on their way. Stay tuned for new releases and updates.</p>
-          <button class="play-button" disabled>COMING SOON</button>
         </div>
       </div>
     </div>
+    
+    <footer>
+      <p>© 2023 Game Universe. All rights reserved. | Neo Space Shooter Edition</p>
+    </footer>
   </div>
   
   <!-- Game Container (hidden initially) -->
@@ -387,8 +408,6 @@
         function angleTo(x1,y1,x2,y2){return Math.atan2(y2-y1,x2-x1);}
         function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
 
-        const asteroidImg = new Image();
-
         const ammoBar = document.getElementById('ammoBar');
         const introOverlay = document.getElementById('introOverlay');
         const memeOverlay = document.getElementById('memeOverlay');
@@ -522,10 +541,6 @@
         const lasers=[];
         const maxAmmo = 30;
         let ammo = maxAmmo;
-        const ui = document.getElementById('ui');
-        const ammoEl = document.createElement('span');
-        ammoEl.id = 'ammo';
-        ui.appendChild(ammoEl);
 
         function shoot(){
           if(player.cooldown<=0 && ammo>0){
@@ -629,7 +644,8 @@
             }
             if(e.type === 'asteroid'){
               for(let j=lasers.length-1;j>=0;j--){
-                if(Math.abs(lasers[j].x - e.x) < (e.size + 4) && Math.abs(lasers[j].y - e.y) < (e.size + 4)){
+                const l = lasers[j];
+                if(distance(l, e) < e.size + 2){
                   lasers.splice(j,1);
                   e.hp--;
                   explosions.push(makeExplosion(e.x,e.y));
@@ -758,4 +774,135 @@
         const difficultySettings = {
           easy:   {spawnMin: 1, spawnMax: 2, timerMin: 1.0, timerMax: 1.6},
           medium: {spawnMin: 2, spawnMax: 3, timerMin: 0.5, timerMax: 1.0},
-          hard:   {spawnMin: 3, spawnMax: 5, timerMin: 0.3, timerMax: 
+          hard:   {spawnMin: 3, spawnMax: 5, timerMin: 0.3, timerMax: 0.6}
+        };
+        let difficulty = 'medium';
+        const scoreEl=document.getElementById('score');
+        const healthEl=document.getElementById('health');
+        const timeEl=document.getElementById('time');
+        const restartBtn=document.getElementById('restartBtn');
+        restartBtn.onclick=startGame;
+        document.body.focus();
+
+        let last=performance.now();
+        initStars();
+        introOverlay.style.display = 'flex';
+        function hideIntro(){
+          if(!showingIntro) return;
+          showingIntro = false;
+          introOverlay.style.display = 'none';
+          startGame();
+        }
+        if(memeBtn){
+          memeBtn.addEventListener('click', () => { hideMemeAndRestart(); });
+        }
+        function hideMemeAndRestart(){
+          if(memeOverlay) memeOverlay.style.display = 'none';
+          startGame();
+        }
+        introOverlay.addEventListener('click', hideIntro);
+        window.addEventListener('keydown', e => {
+          if(showingIntro && (e.key === 'Enter' || e.key === ' ')){ hideIntro(); }
+        });
+        function startGame(){
+          score=0; health=3; ammo=maxAmmo;
+          survivalTime = 0;
+          pointTimer   = 0;
+          enemies.length=lasers.length=explosions.length=0;
+          running=true;
+          restartBtn.style.display='none';
+          if(memeOverlay) memeOverlay.style.display='none';
+          resetPlayer();
+          last = performance.now();
+          animate();
+        }
+        function endGame(){
+          running = false;
+          let memeKey;
+          if (score < 1000) {
+            memeKey = 'low';
+          } else if (score >= 1000 && score <= 2000) {
+            memeKey = 'mid';
+          } else if (score > 10000) {
+            memeKey = 'high';
+          }
+          if (memeKey) {
+            const data = memeData[memeKey];
+            if (memeTitle) memeTitle.textContent = data.title;
+            if (memeMessage) memeMessage.textContent = data.message;
+            if (memeImg) {
+              if (data.src) {
+                memeImg.src = data.src;
+                memeImg.style.display = 'block';
+              } else {
+                memeImg.style.display = 'none';
+              }
+            }
+          } else {
+            if (memeTitle) memeTitle.textContent = 'Game Over';
+            if (memeMessage) memeMessage.textContent = \`Score: \${score}. Good effort!\`;
+            if (memeImg) memeImg.style.display = 'none';
+          }
+          if (memeOverlay) memeOverlay.style.display = 'flex';
+          restartBtn.style.display = 'none';
+        }
+
+        function animate(now=performance.now()){
+          if(!running)return;
+          const dt=(now-last)/1000; last=now;
+          if(running){
+            survivalTime += dt;
+            pointTimer   += dt;
+            while(pointTimer >= 1){ pointTimer -= 1; score += 10; }
+          }
+          ctx.clearRect(0,0,c.width,c.height);
+          updateStars(dt);
+          handleInput(dt);
+          updatePlayer(dt);
+          updateLasers(dt);
+          updateEnemies(dt);
+          updateExplosions(dt);
+          drawStars();
+          drawLasers();
+          drawEnemies();
+          drawExplosions();
+          drawPlayer();
+          scoreEl.textContent=\`Score: \${score}\`;
+          healthEl.textContent=\`Health: \${health}\`;
+          if(timeEl) timeEl.textContent = \`Time: \${Math.floor(survivalTime)}s\`;
+          if(ammoBar){
+            const ratio = ammo / maxAmmo;
+            ammoBar.style.width = Math.max(0, Math.min(1, ratio)) * 100 + '%';
+          }
+          requestAnimationFrame(animate);
+        }
+
+        function handleInput(dt){
+          if(keys['arrowleft'])  player.vx-=player.accel*dt;
+          if(keys['arrowright']) player.vx+=player.accel*dt;
+          if(keys['arrowup'])    player.vy-=player.accel*dt;
+          if(keys['arrowdown'])  player.vy+=player.accel*dt;
+          if(keys[' ']) shoot();
+        }
+        <\/script>
+        </body>
+        </html>
+      `;
+      
+      // Initialize the game after a short delay to allow DOM to update
+      setTimeout(() => {
+        const iframe = document.createElement('iframe');
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.border = 'none';
+        iframe.srcdoc = gameContainer.innerHTML;
+        gameContainer.innerHTML = '';
+        gameContainer.appendChild(iframe);
+      }, 100);
+    }
+    
+    // Initialize
+    createStars();
+  </script>
+</body>
+</html>
