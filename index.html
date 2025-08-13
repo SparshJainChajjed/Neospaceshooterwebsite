@@ -359,6 +359,7 @@
             <span id="score">Score: 0</span>
             <span id="health">Health: 3</span>
             <span id="time">Time: 0s</span>
+            <span id="ammo">Ammo: 30</span>
           </div>
           <button id="restartBtn">RESTART</button>
           <canvas id="game"></canvas>
@@ -415,6 +416,7 @@
         const memeTitle = document.getElementById('memeTitle');
         const memeMessage = document.getElementById('memeMessage');
         const memeImg = document.getElementById('memeImg');
+        const ammoEl = document.getElementById('ammo');
 
         const diffButtons = document.querySelectorAll('.diffButton');
         diffButtons.forEach(btn => {
@@ -434,8 +436,8 @@
         });
 
         const memeData = {
-          low: { src: "https://i.imgflip.com/40z1bz.jpg", title: "Under 5000? Professional Idiot!", message: "Yikes! Your score is under 5000. You are a professional idiot! Time to sharpen those piloting skills." },
-          mid: { src: "", title: "5000 to 9999 Points!", message: "Good effort! Keep going to reach the top." },
+          low: { src: "", title: "Professional Idiot!", message: "Your score is under 4000. You are a professional idiot! Time to sharpen those piloting skills." },
+          mid: { src: "", title: "Good Effort!", message: "Your score is between 4000 and 9999. Keep pushing!" },
           high:{ src: "https://i.kym-cdn.com/photos/images/original/002/208/179/4f0.jpg", title: "Above 10,000! Good Job Now Go Touch Some Grass!", message: "Whoa, over 10,000 points! Good job now go touch some grass." }
         };
 
@@ -819,7 +821,7 @@
         function endGame(){
           running = false;
           let memeKey;
-          if (score < 5000) {
+          if (score < 4000) {
             memeKey = 'low';
           } else if (score < 10000) {
             memeKey = 'mid';
@@ -864,6 +866,7 @@
           scoreEl.textContent=\`Score: \${score}\`;
           healthEl.textContent=\`Health: \${health}\`;
           if(timeEl) timeEl.textContent = \`Time: \${Math.floor(survivalTime)}s\`;
+          if(ammoEl) ammoEl.textContent = \`Ammo: \${ammo}\`;
           if(ammoBar){
             const ratio = ammo / maxAmmo;
             ammoBar.style.width = Math.max(0, Math.min(1, ratio)) * 100 + '%';
