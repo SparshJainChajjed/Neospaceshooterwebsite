@@ -434,9 +434,9 @@
         });
 
         const memeData = {
-          low: { src: "", title: "Under 1000? Professional Idiot!", message: "Yikes! Your score is under 1000. You are a professional idiot! Time to sharpen those piloting skills." },
-          mid: { src: "", title: "Not Good Enough!", message: "You scored between 1000 and 2000 points. Not bad, but you can do better." },
-          high:{ src: "", title: "Touch Some Grass!", message: "Whoa, over 10,000 points! Perhaps it's time to step outside and see some nature." }
+          low: { src: "https://i.imgflip.com/40z1bz.jpg", title: "Under 5000? Professional Idiot!", message: "Yikes! Your score is under 5000. You are a professional idiot! Time to sharpen those piloting skills." },
+          mid: { src: "", title: "5000 to 9999 Points!", message: "Good effort! Keep going to reach the top." },
+          high:{ src: "https://i.kym-cdn.com/photos/images/original/002/208/179/4f0.jpg", title: "Above 10,000! Good Job Now Go Touch Some Grass!", message: "Whoa, over 10,000 points! Good job now go touch some grass." }
         };
 
         const stars=[];
@@ -570,7 +570,7 @@
             const x = randBetween(orbSize, c.width - orbSize);
             const y = -orbSize;
             const vx = randBetween(-40, 40);
-            const vy = randBetween(60, 120);
+            const vy = randBetween(80, 180);
             enemies.push({type:'energy', x, y, vx, vy, size: orbSize});
             return;
           }
@@ -578,7 +578,7 @@
           const x = randBetween(size, c.width - size);
           const y = -size;
           const vx = randBetween(-60, 60);
-          const vy = randBetween(40, 100);
+          const vy = randBetween(60, 150);
           const hp = 2;
           const angle = Math.random() * Math.PI * 2;
           const spin  = (Math.random() * 2 - 1) * 0.4;
@@ -772,9 +772,9 @@
         let pointTimer   = 0;
 
         const difficultySettings = {
-          easy:   {spawnMin: 1, spawnMax: 2, timerMin: 1.0, timerMax: 1.6},
-          medium: {spawnMin: 2, spawnMax: 3, timerMin: 0.5, timerMax: 1.0},
-          hard:   {spawnMin: 3, spawnMax: 5, timerMin: 0.3, timerMax: 0.6}
+          easy:   {spawnMin: 1, spawnMax: 3, timerMin: 0.8, timerMax: 1.4},
+          medium: {spawnMin: 3, spawnMax: 4, timerMin: 0.4, timerMax: 0.8},
+          hard:   {spawnMin: 4, spawnMax: 7, timerMin: 0.2, timerMax: 0.5}
         };
         let difficulty = 'medium';
         const scoreEl=document.getElementById('score');
@@ -819,29 +819,23 @@
         function endGame(){
           running = false;
           let memeKey;
-          if (score < 1000) {
+          if (score < 5000) {
             memeKey = 'low';
-          } else if (score >= 1000 && score <= 2000) {
+          } else if (score < 10000) {
             memeKey = 'mid';
-          } else if (score > 10000) {
+          } else {
             memeKey = 'high';
           }
-          if (memeKey) {
-            const data = memeData[memeKey];
-            if (memeTitle) memeTitle.textContent = data.title;
-            if (memeMessage) memeMessage.textContent = data.message;
-            if (memeImg) {
-              if (data.src) {
-                memeImg.src = data.src;
-                memeImg.style.display = 'block';
-              } else {
-                memeImg.style.display = 'none';
-              }
+          const data = memeData[memeKey];
+          if (memeTitle) memeTitle.textContent = data.title;
+          if (memeMessage) memeMessage.textContent = data.message;
+          if (memeImg) {
+            if (data.src) {
+              memeImg.src = data.src;
+              memeImg.style.display = 'block';
+            } else {
+              memeImg.style.display = 'none';
             }
-          } else {
-            if (memeTitle) memeTitle.textContent = 'Game Over';
-            if (memeMessage) memeMessage.textContent = \`Score: \${score}. Good effort!\`;
-            if (memeImg) memeImg.style.display = 'none';
           }
           if (memeOverlay) memeOverlay.style.display = 'flex';
           restartBtn.style.display = 'none';
